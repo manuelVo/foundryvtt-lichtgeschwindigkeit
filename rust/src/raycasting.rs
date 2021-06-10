@@ -282,12 +282,14 @@ pub fn js_compute_sight(
 		&result,
 		&JsValue::from_str("los"),
 		&los.into_iter().map(JsValue::from).collect::<Array>(),
-	).unwrap();
+	)
+	.unwrap();
 	js_sys::Reflect::set(
 		&result,
 		&JsValue::from_str("fov"),
 		&fov.into_iter().map(JsValue::from).collect::<Array>(),
-	).unwrap();
+	)
+	.unwrap();
 	result
 }
 
@@ -979,7 +981,7 @@ fn calculate_fov(
 	for i in 0..los_points.len() {
 		let los_point = los_points[i];
 		let distance = origin.distance_to(&los_point.point);
-		if distance <= radius {
+		if distance < radius {
 			// TODO Properly handle i == 0
 			if i == 0 {
 				fov_points.push(los_point);
@@ -1003,22 +1005,22 @@ fn calculate_fov(
 						});
 					} else {
 						let line = Line::from_points(previous_los.point, los_point.point);
-						// TODO Verify that there is always an intersection
-						let fov_intersections = fov.intersections(&line).unwrap();
-						let relevant_intersection;
-						// TODO is_smaller_relative
-						if fov_intersections.0.angle > previous_los.angle
-							&& fov_intersections.0.angle < los_point.angle
-						{
-							relevant_intersection = fov_intersections.0;
-						} else {
-							relevant_intersection = fov_intersections.1;
+						if let Some(fov_intersections) = fov.intersections(&line) {
+							let relevant_intersection;
+							// TODO is_smaller_relative
+							if fov_intersections.0.angle > previous_los.angle
+								&& fov_intersections.0.angle < los_point.angle
+							{
+								relevant_intersection = fov_intersections.0;
+							} else {
+								relevant_intersection = fov_intersections.1;
+							}
+							fov_points.push(FovPoint {
+								point: relevant_intersection.point,
+								angle: relevant_intersection.angle,
+								gap: false,
+							});
 						}
-						fov_points.push(FovPoint {
-							point: relevant_intersection.point,
-							angle: relevant_intersection.angle,
-							gap: false,
-						})
 					}
 				}
 				fov_points.push(los_point);
