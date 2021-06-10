@@ -1024,6 +1024,25 @@ fn calculate_fov(
 					}
 				}
 				fov_points.push(los_point);
+
+				if i == los_points.len() - 1 {
+					if start_gap_fov && !los_point.gap {
+						let line =
+							Line::from_points(los_point.point, los_points.first().unwrap().point);
+						let intersections = fov.intersections(&line).unwrap();
+						let exit_intersection;
+						if intersections.0.angle > intersections.1.angle {
+							exit_intersection = intersections.0;
+						} else {
+							exit_intersection = intersections.1;
+						}
+						fov_points.push(FovPoint {
+							point: exit_intersection.point,
+							angle: exit_intersection.angle,
+							gap: false,
+						});
+					}
+				}
 			}
 		} else {
 			let previous_fov_gap = fov_points
