@@ -1,0 +1,6 @@
+artifact/
+/foundry*.js
+.idea/
+.vscode/
+*.txt
+perf.data*

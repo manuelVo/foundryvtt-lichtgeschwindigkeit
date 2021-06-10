@@ -1,0 +1,220 @@
+use wasm_bindgen::prelude::*;
+
+use crate::geometry::{JsPoint, Line, Point};
+use crate::raycasting::WallBase;
+use crate::wasm_types::{DoorState, DoorType, WallDirection, WallSenseType};
+use nom::bytes::complete::take;
+use nom::IResult;
+use std::convert::{TryFrom, TryInto};
+use std::fmt::Debug;
+use std::mem::size_of;
+use yazi::{compress, decompress, CompressionLevel, Format};
+
+trait Serialize {
+	fn serialize(&self) -> Vec<u8>;
+	fn deserialize(input: &[u8]) -> IResult<&[u8], Self>
+	where
+		Self: Sized;
+}
+
+trait SerializeByte {
+	fn serialize(&self) -> u8;
+	fn deserialize(input: &[u8]) -> IResult<&[u8], Self>
+	where
+		Self: Sized + TryFrom<usize>,
+		<Self as TryFrom<usize>>::Error: Debug,
+	{
+		let (input, byte) = take(1usize)(input)?;
+		Ok((input, (byte[0] as usize).try_into().unwrap()))
+	}
+}
+
+impl Serialize for f64 {
+	fn serialize(&self) -> Vec<u8> {
+		self.to_be_bytes().into()
+	}
+
+	fn deserialize(input: &[u8]) -> IResult<&[u8], Self> {
+		let (input, representation) = take(size_of::<Self>())(input)?;
+		Ok((
+			input,
+			Self::from_be_bytes(representation.try_into().unwrap()),
+		))
+	}
+}
+
+impl Serialize for Point {
+	fn serialize(&self) -> Vec<u8> {
+		let mut data = Vec::with_capacity(size_of::<Self>());
+		data.append(&mut self.x.serialize());
+		data.append(&mut self.y.serialize());
+		data
+	}
+
+	fn deserialize(input: &[u8]) -> IResult<&[u8], Self> {
+		let (input, x) = f64::deserialize(input)?;
+		let (input, y) = f64::deserialize(input)?;
+		Ok((input, Self { x, y }))
+	}
+}
+
+impl SerializeByte for WallSenseType {
+	fn serialize(&self) -> u8 {
+		return *self as u8;
+	}
+}
+
+impl SerializeByte for DoorType {
+	fn serialize(&self) -> u8 {
+		return *self as u8;
+	}
+}
+
+impl SerializeByte for DoorState {
+	fn serialize(&self) -> u8 {
+		return *self as u8;
+	}
+}
+
+impl SerializeByte for WallDirection {
+	fn serialize(&self) -> u8 {
+		return *self as u8;
+	}
+}
+
+pub struct SerializedData {
+	pub walls: Vec<WallBase>,
+	pub origin: Point,
+	pub radius: f64,
+	pub distance: f64,
+	pub density: f64,
+	pub angle: f64,
+	pub rotation: f64,
+}
+
+impl SerializedData {
+	pub fn serialize(&self) -> String {
+		let mut data = Vec::new();
+		data.append(
+			&mut u32::try_from(self.walls.len())
+				.unwrap()
+				.to_be_bytes()
+				.into(),
+		);
+		for wall in &self.walls {
+			data.append(&mut wall.serialize());
+		}
+		data.append(&mut self.origin.serialize());
+		data.append(&mut self.radius.serialize());
+		data.append(&mut self.distance.serialize());
+		data.append(&mut self.density.serialize());
+		data.append(&mut self.angle.serialize());
+		data.append(&mut self.rotation.serialize());
+		let mut compressed = compress(&data, Format::Zlib, CompressionLevel::BestSize).unwrap();
+		compressed.insert(0, 0u8);
+		ascii85::encode(&compressed)
+	}
+
+	fn nom_deserialize(input: &[u8]) -> IResult<&[u8], Self> {
+		assert_eq!(size_of::<usize>(), 8);
+		let (input, walls_len) = take(size_of::<u32>())(input)?;
+		let walls_len = u32::from_be_bytes(walls_len.try_into().unwrap()) as usize;
+		let mut walls = Vec::with_capacity(walls_len);
+		let mut input = input;
+		for _ in 0..walls_len {
+			let (new_input, wall) = WallBase::deserialize(input)?;
+			input = new_input;
+			walls.push(wall);
+		}
+		let (input, origin) = Point::deserialize(input)?;
+		let (input, radius) = f64::deserialize(input)?;
+		let (input, distance) = f64::deserialize(input)?;
+		let (input, density) = f64::deserialize(input)?;
+		let (input, angle) = f64::deserialize(input)?;
+		let (input, rotation) = f64::deserialize(input)?;
+		Ok((
+			input,
+			Self {
+				walls,
+				origin,
+				radius,
+				distance,
+				density,
+				angle,
+				rotation,
+			},
+		))
+	}
+
+	#[allow(unused)]
+	pub fn deserialize(input: &str) -> Self {
+		let input = ascii85::decode(input).unwrap();
+		if input[0] != 0 {
+			panic!("Data stream has a wrong version number.");
+		}
+		let input = &input[1..];
+		let (input, _) = &decompress(input, Format::Zlib).unwrap();
+		Self::nom_deserialize(input).unwrap().1
+	}
+}
+
+impl Serialize for WallBase {
+	fn serialize(&self) -> Vec<u8> {
+		let mut data = Vec::with_capacity(size_of::<Self>());
+		data.append(&mut self.p1.serialize());
+		data.append(&mut self.p2.serialize());
+		data.push(self.sense.serialize());
+		data.push(self.door.serialize());
+		data.push(self.ds.serialize());
+		data.push(self.dir.serialize());
+		data
+	}
+
+	fn deserialize(input: &[u8]) -> IResult<&[u8], Self> {
+		let (input, p1) = Point::deserialize(input)?;
+		let (input, p2) = Point::deserialize(input)?;
+		let line = Line::from_points(p1, p2);
+		let (input, sense) = WallSenseType::deserialize(input)?;
+		let (input, door) = DoorType::deserialize(input)?;
+		let (input, ds) = DoorState::deserialize(input)?;
+		let (input, dir) = WallDirection::deserialize(input)?;
+		Ok((
+			input,
+			Self {
+				p1,
+				p2,
+				line,
+				sense,
+				door,
+				ds,
+				dir,
+			},
+		))
+	}
+}
+
+#[wasm_bindgen(js_name=exportData)]
+#[allow(unused)]
+pub fn js_export_data(
+	walls: Vec<JsValue>,
+	origin: JsPoint,
+	radius: f64,
+	distance: f64,
+	density: f64,
+	angle: f64,
+	rotation: f64,
+) -> String {
+	let data = SerializedData {
+		walls: walls
+			.into_iter()
+			.map(|wall| WallBase::from(&wall.into()))
+			.collect(),
+		origin: Point::from(&origin.into()),
+		radius,
+		distance,
+		density,
+		angle,
+		rotation,
+	};
+	data.serialize()
+}

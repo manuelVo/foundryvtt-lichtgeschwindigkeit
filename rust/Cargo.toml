@@ -1,0 +1,26 @@
+[package]
+name = "lichtgeschwindigkeit"
+version = "0.0.4"
+authors = ["Manuel Vögele <develop@manuel-voegele.de>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[[bin]]
+name = "lichtgeschwindigkeit-profiling"
+path = "src/profiling_main.rs"
+
+[profile.release]
+lto = true
+#debug = true
+
+
+[dependencies]
+ascii85 = "*"
+console_error_panic_hook = "*"
+js-sys = "*"
+nom = "*"
+rustc-hash = "*"
+wasm-bindgen = "*"
+yazi = "*"

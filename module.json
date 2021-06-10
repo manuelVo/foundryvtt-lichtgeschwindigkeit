@@ -1,0 +1,20 @@
+{
+	"name": "lichtgeschwindigkeit",
+	"title": "Lichtgeschwindigkeit",
+	"description": "Improves the speed of the vision calculation in Foundry.",
+	"version": "0.0.4",
+	"minimumCoreVersion": "0.7.9",
+	"compatibleCoreVersion": "0.7.9",
+	"authors": [
+		{
+			"name": "Manuel Vögele",
+			"email": "develop@manuel-voegele.de",
+			"discord": "Stäbchenfisch#5107"
+		}
+	],
+	"esmodules": [
+		"js/main.js"
+	],
+	"download": "https://files.ccn.li/foundryvtt/lichtgeschwindigkeit/releases/lichtgeschwindigkeit-0.0.4.zip",
+	"manifest": "https://files.ccn.li/foundryvtt/lichtgeschwindigkeit/module.json"
+}
