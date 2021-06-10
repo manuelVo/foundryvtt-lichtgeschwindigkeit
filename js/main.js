@@ -2,6 +2,7 @@ import init, * as Lichtgeschwindigkeit from "../wasm/lichtgeschwindigkeit.js";
 
 init().then(() => {
 	SightLayer.computeSight = wasmComputeSight;
+	WallsLayer.prototype.computePolygon = wasmComputeSight;
 	Hooks.on("canvasInit", Lichtgeschwindigkeit.wipeCache);
 	Hooks.on("createWall", Lichtgeschwindigkeit.wipeCache);
 	Hooks.on("updateWall", Lichtgeschwindigkeit.wipeCache);
