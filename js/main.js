@@ -6,6 +6,9 @@ init().then(() => {
 	Hooks.on("createWall", Lichtgeschwindigkeit.wipeCache);
 	Hooks.on("updateWall", Lichtgeschwindigkeit.wipeCache);
 	Hooks.on("deleteWall", Lichtgeschwindigkeit.wipeCache);
+	window.lichtgeschwindikgeit = {
+		build_scene
+	}
 });
 
 function wasmComputeSight(origin, radius, { angle = 360, density = 6, rotation = 0, unrestricted = false } = {}) {
@@ -63,7 +66,7 @@ function rustifyParams(walls, origin, radius, distance, density, angle, rotation
 		if (Math.abs(origin.x - canvas.tokens.controlled[0].data.x) > 50 || Math.abs(origin.y - canvas.tokens.controlled[0].data.y) > 50)
 			return;
 	}*/
-	error_fn(Lichtgeschwindigkeit.exportData(walls, origin, radius, distance, density, angle, rotation));
+	error_fn(Lichtgeschwindigkeit.serializeData(walls, origin, radius, distance, density, angle, rotation));
 }
 
 function _visualizeSight(endpoints, origin, radius, distance, los, fov, tangentPoints, clear = true) {
@@ -106,4 +109,20 @@ function _visualizeSight(endpoints, origin, radius, distance, los, fov, tangentP
 	for (const endpoint of endpoints) {
 		debug.lineStyle(1, 0x00FF00).moveTo(origin.x, origin.y).lineTo(origin.x - Math.cos(endpoint.angle) * distance, origin.y - Math.sin(endpoint.angle) * distance);
 	}
+}
+
+function build_scene() {
+	new Dialog({
+		content: "<textarea id='lichtgeschwindigkeit-debug-input'></textarea>",
+		buttons: {
+			ok: {
+				icon: '<i class="fas fa-check"></i>',
+				callback: html => {
+					let data = document.getElementById("lichtgeschwindigkeit-debug-input").value;
+					data = Lichtgeschwindigkeit.deserializeData(data);
+					import("./scene_builder.js").then((module) => module.build_scene(data));
+				}
+			}
+		}
+	}).render(true);
 }

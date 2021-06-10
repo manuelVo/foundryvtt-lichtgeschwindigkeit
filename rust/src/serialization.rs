@@ -9,6 +9,7 @@ use std::convert::{TryFrom, TryInto};
 use std::fmt::Debug;
 use std::mem::size_of;
 use yazi::{compress, decompress, CompressionLevel, Format};
+use js_sys::{Object, Array};
 
 trait Serialize {
 	fn serialize(&self) -> Vec<u8>;
@@ -92,6 +93,21 @@ pub struct SerializedData {
 	pub rotation: f64,
 }
 
+impl From<SerializedData> for Object {
+	fn from(value: SerializedData) -> Self {
+		use js_sys::Reflect::set;
+		let result = Object::new();
+		set(&result, &JsValue::from_str("walls"), &value.walls.into_iter().map::<JsValue, _>(|wall| wall.into()).collect::<Array>()).unwrap();
+		set(&result, &JsValue::from_str("origin"), &value.origin.into()).unwrap();
+		set(&result, &JsValue::from_str("radius"), &value.radius.into()).unwrap();
+		set(&result, &JsValue::from_str("distance"), &value.distance.into()).unwrap();
+		set(&result, &JsValue::from_str("density"), &value.density.into()).unwrap();
+		set(&result, &JsValue::from_str("angle"), &value.angle.into()).unwrap();
+		set(&result, &JsValue::from_str("rotation"), &value.rotation.into()).unwrap();
+		result
+	}
+}
+
 impl SerializedData {
 	pub fn serialize(&self) -> String {
 		let mut data = Vec::new();
@@ -116,7 +132,6 @@ impl SerializedData {
 	}
 
 	fn nom_deserialize(input: &[u8]) -> IResult<&[u8], Self> {
-		assert_eq!(size_of::<usize>(), 8);
 		let (input, walls_len) = take(size_of::<u32>())(input)?;
 		let walls_len = u32::from_be_bytes(walls_len.try_into().unwrap()) as usize;
 		let mut walls = Vec::with_capacity(walls_len);
@@ -146,7 +161,6 @@ impl SerializedData {
 		))
 	}
 
-	#[allow(unused)]
 	pub fn deserialize(input: &str) -> Self {
 		let input = ascii85::decode(input).unwrap();
 		if input[0] != 0 {
@@ -193,9 +207,9 @@ impl Serialize for WallBase {
 	}
 }
 
-#[wasm_bindgen(js_name=exportData)]
-#[allow(unused)]
-pub fn js_export_data(
+#[wasm_bindgen(js_name=serializeData)]
+#[allow(dead_code)]
+pub fn js_serialize_data(
 	walls: Vec<JsValue>,
 	origin: JsPoint,
 	radius: f64,
@@ -217,4 +231,11 @@ pub fn js_export_data(
 		rotation,
 	};
 	data.serialize()
+}
+
+#[wasm_bindgen(js_name=deserializeData)]
+#[allow(dead_code)]
+pub fn js_deserialize_data(str: &str) -> Object {
+	let data = SerializedData::deserialize(str);
+	data.into()
 }

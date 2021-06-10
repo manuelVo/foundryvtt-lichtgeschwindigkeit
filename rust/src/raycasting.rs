@@ -11,10 +11,12 @@ use crate::ptr_indexed_hash_set::PtrIndexedHashSet;
 use crate::wasm_types::{DoorState, DoorType, WallDirection, WallSenseType};
 use rustc_hash::FxHashMap;
 
+#[wasm_bindgen]
 #[derive(Debug, Copy, Clone)]
 pub struct WallBase {
 	pub p1: Point,
 	pub p2: Point,
+	#[wasm_bindgen(skip)]
 	pub line: Line,
 	pub sense: WallSenseType,
 	pub door: DoorType,
@@ -160,7 +162,7 @@ impl Endpoint {
 }
 
 #[wasm_bindgen]
-#[allow(unused)]
+#[allow(dead_code)]
 struct ExposedEndpoint {
 	pub x: f64,
 	pub y: f64,
@@ -250,7 +252,7 @@ extern "C" {
 }
 
 #[wasm_bindgen(js_name=computeSight)]
-#[allow(unused)]
+#[allow(dead_code)]
 pub fn js_compute_sight(
 	js_walls: Vec<JsValue>,
 	origin: JsValue,
@@ -280,12 +282,12 @@ pub fn js_compute_sight(
 		&result,
 		&JsValue::from_str("los"),
 		&los.into_iter().map(JsValue::from).collect::<Array>(),
-	);
+	).unwrap();
 	js_sys::Reflect::set(
 		&result,
 		&JsValue::from_str("fov"),
 		&fov.into_iter().map(JsValue::from).collect::<Array>(),
-	);
+	).unwrap();
 	result
 }
 
@@ -1001,7 +1003,7 @@ fn calculate_fov(
 						});
 					} else {
 						let line = Line::from_points(previous_los.point, los_point.point);
-						// TODO Verify that this can never happen
+						// TODO Verify that there is always an intersection
 						let fov_intersections = fov.intersections(&line).unwrap();
 						let relevant_intersection;
 						// TODO is_smaller_relative
@@ -1227,7 +1229,7 @@ fn find_closest_wall_tiebreaker(origin: Point, ties: &Vec<Rc<Wall>>) -> Option<C
 
 static mut INTERSECTION_CACHE: Option<Vec<Point>> = None;
 
-#[allow(unused)]
+#[allow(dead_code)]
 #[wasm_bindgen(js_name=wipeCache)]
 pub fn wipe_cache() {
 	unsafe {
