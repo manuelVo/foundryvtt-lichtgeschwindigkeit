@@ -1,8 +1,8 @@
 import init, * as Lichtgeschwindigkeit from "../wasm/lichtgeschwindigkeit.js";
 
 init().then(() => {
-	SightLayer.computeSight = wasmComputeSight;
-	WallsLayer.prototype.computePolygon = wasmComputeSight;
+	SightLayer.computeSight = wasmComputePolygon;
+	WallsLayer.prototype.computePolygon = wasmComputePolygon;
 	Hooks.on("canvasInit", Lichtgeschwindigkeit.wipeCache);
 	Hooks.on("createWall", Lichtgeschwindigkeit.wipeCache);
 	Hooks.on("updateWall", Lichtgeschwindigkeit.wipeCache);
@@ -12,7 +12,7 @@ init().then(() => {
 	}
 });
 
-function wasmComputeSight(origin, radius, { angle = 360, density = 6, rotation = 0, unrestricted = false } = {}) {
+function wasmComputePolygon(origin, radius, { type = "sight", angle = 360, density = 6, rotation = 0, unrestricted = false } = {}) {
 	let debugEnabled = CONFIG.debug.sightRays;
 	// The maximum ray distance needs to reach all areas of the canvas
 	let d = canvas.dimensions;
@@ -41,7 +41,7 @@ function wasmComputeSight(origin, radius, { angle = 360, density = 6, rotation =
 
 	let sight;
 	try {
-		sight = Lichtgeschwindigkeit.computeSight(walls, origin, radius, distance, density, angle, rotation, internals);
+		sight = Lichtgeschwindigkeit.computePolygon(walls, origin, radius, distance, density, angle, rotation, internals);
 	}
 	catch (e) {
 		console.error(e);

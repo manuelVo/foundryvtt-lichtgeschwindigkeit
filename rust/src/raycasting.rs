@@ -251,9 +251,9 @@ extern "C" {
 	pub fn set_endpoints(this: &InternalsTransfer, endpoints: Vec<JsValue>);
 }
 
-#[wasm_bindgen(js_name=computeSight)]
+#[wasm_bindgen(js_name=computePolygon)]
 #[allow(dead_code)]
-pub fn js_compute_sight(
+pub fn js_compute_polygon(
 	js_walls: Vec<JsValue>,
 	origin: JsValue,
 	radius: f64,
@@ -268,7 +268,7 @@ pub fn js_compute_sight(
 		walls.push(WallBase::from(&wall.into()));
 	}
 	let origin = Point::from(&origin.into());
-	let (los, fov) = compute_sight(
+	let (los, fov) = compute_polygon(
 		walls,
 		origin,
 		radius,
@@ -293,7 +293,7 @@ pub fn js_compute_sight(
 	result
 }
 
-pub fn compute_sight(
+pub fn compute_polygon(
 	wall_bases: Vec<WallBase>,
 	origin: Point,
 	radius: f64,

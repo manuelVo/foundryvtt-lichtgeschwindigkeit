@@ -15,7 +15,7 @@ fn main() {
 	let mut sum = 0;
 	let mut los = None;
 	for _i in 0..1 {
-		los = Some(compute_sight(
+		los = Some(compute_polygon(
 			data.walls.clone(),
 			data.origin,
 			data.radius,
