@@ -6,14 +6,14 @@ use wasm_bindgen::prelude::*;
 #[allow(unused)]
 macro_rules! log {
 	( $( $t:tt )* ) => {
-		log(&format!( $( $t )* ));
+		crate::wasm_types::log(&format!( $( $t )* ));
 	};
 }
 
 #[wasm_bindgen]
 extern "C" {
 	#[wasm_bindgen(js_namespace = console, js_name=warn)]
-	fn log(s: &str);
+	pub fn log(s: &str);
 }
 
 #[wasm_bindgen]
@@ -38,21 +38,61 @@ extern "C" {
 	fn sense(this: &JsWallData) -> WallSenseType;
 
 	#[wasm_bindgen(method, getter)]
+	fn sound(this: &JsWallData) -> WallSenseType;
+
+	#[wasm_bindgen(method, getter)]
 	fn dir(this: &JsWallData) -> Option<WallDirection>;
 }
 
-impl From<&JsWall> for WallBase {
-	fn from(wall: &JsWall) -> Self {
+impl WallBase {
+	pub fn from_js(wall: &JsWall, polygon_type: PolygonType) -> Self {
 		let data = wall.data();
 		let c = data.c();
+		let sense = match polygon_type {
+			PolygonType::SIGHT => data.sense(),
+			PolygonType::SOUND => data.sound(),
+		};
 		Self::new(
 			Point::new(c[0].round(), c[1].round()),
 			Point::new(c[2].round(), c[3].round()),
-			data.sense(),
+			sense,
 			data.door(),
 			data.ds(),
 			data.dir().unwrap_or(WallDirection::BOTH),
 		)
+	}
+}
+
+#[derive(Copy, Clone)]
+pub enum PolygonType {
+	SIGHT = 0,
+	SOUND = 1,
+}
+
+impl From<&str> for PolygonType {
+	fn from(value: &str) -> Self {
+		match value {
+			"sight" => Self::SIGHT,
+			"sound" => Self::SOUND,
+			_ => {
+				log!(
+					"Lichtgeschwindigkeit | Unknown polygon type '{}', assuming 'sight'",
+					value
+				);
+				Self::SIGHT
+			}
+		}
+	}
+}
+
+impl TryFrom<usize> for PolygonType {
+	type Error = ();
+	fn try_from(value: usize) -> Result<Self, Self::Error> {
+		match value {
+			x if x == Self::SIGHT as usize => Ok(Self::SIGHT),
+			x if x == Self::SOUND as usize => Ok(Self::SOUND),
+			_ => Err(()),
+		}
 	}
 }
 

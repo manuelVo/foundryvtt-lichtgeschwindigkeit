@@ -8,7 +8,7 @@ use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 // TODO Try out if this is acutally the optimal hasher to use
 use crate::ptr_indexed_hash_set::PtrIndexedHashSet;
-use crate::wasm_types::{DoorState, DoorType, WallDirection, WallSenseType};
+use crate::wasm_types::{DoorState, DoorType, PolygonType, WallDirection, WallSenseType};
 use rustc_hash::FxHashMap;
 
 #[wasm_bindgen]
@@ -255,6 +255,7 @@ extern "C" {
 #[allow(dead_code)]
 pub fn js_compute_polygon(
 	js_walls: Vec<JsValue>,
+	polygon_type: &str,
 	origin: JsValue,
 	radius: f64,
 	distance: f64,
@@ -263,9 +264,10 @@ pub fn js_compute_polygon(
 	rotation: f64,
 	internals_transfer: Option<InternalsTransfer>,
 ) -> Object {
+	let polygon_type = PolygonType::from(polygon_type);
 	let mut walls = Vec::with_capacity(js_walls.len());
 	for wall in js_walls {
-		walls.push(WallBase::from(&wall.into()));
+		walls.push(WallBase::from_js(&wall.into(), polygon_type));
 	}
 	let origin = Point::from(&origin.into());
 	let (los, fov) = compute_polygon(

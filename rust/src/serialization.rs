@@ -2,14 +2,14 @@ use wasm_bindgen::prelude::*;
 
 use crate::geometry::{JsPoint, Line, Point};
 use crate::raycasting::WallBase;
-use crate::wasm_types::{DoorState, DoorType, WallDirection, WallSenseType};
+use crate::wasm_types::{DoorState, DoorType, PolygonType, WallDirection, WallSenseType};
+use js_sys::{Array, Object};
 use nom::bytes::complete::take;
 use nom::IResult;
 use std::convert::{TryFrom, TryInto};
 use std::fmt::Debug;
 use std::mem::size_of;
 use yazi::{compress, decompress, CompressionLevel, Format};
-use js_sys::{Object, Array};
 
 trait Serialize {
 	fn serialize(&self) -> Vec<u8>;
@@ -83,8 +83,15 @@ impl SerializeByte for WallDirection {
 	}
 }
 
+impl SerializeByte for PolygonType {
+	fn serialize(&self) -> u8 {
+		*self as u8
+	}
+}
+
 pub struct SerializedData {
 	pub walls: Vec<WallBase>,
+	pub polygon_type: PolygonType,
 	pub origin: Point,
 	pub radius: f64,
 	pub distance: f64,
@@ -97,13 +104,39 @@ impl From<SerializedData> for Object {
 	fn from(value: SerializedData) -> Self {
 		use js_sys::Reflect::set;
 		let result = Object::new();
-		set(&result, &JsValue::from_str("walls"), &value.walls.into_iter().map::<JsValue, _>(|wall| wall.into()).collect::<Array>()).unwrap();
+		set(
+			&result,
+			&JsValue::from_str("walls"),
+			&value
+				.walls
+				.into_iter()
+				.map::<JsValue, _>(|wall| wall.into())
+				.collect::<Array>(),
+		)
+		.unwrap();
+		// This isn't required in js so we save ourselfs from writing the conversion of PolygonType into String
+		//set(&result, &JsValue::from_str("type"), &value.polygon_type.into()).unwrap();
 		set(&result, &JsValue::from_str("origin"), &value.origin.into()).unwrap();
 		set(&result, &JsValue::from_str("radius"), &value.radius.into()).unwrap();
-		set(&result, &JsValue::from_str("distance"), &value.distance.into()).unwrap();
-		set(&result, &JsValue::from_str("density"), &value.density.into()).unwrap();
+		set(
+			&result,
+			&JsValue::from_str("distance"),
+			&value.distance.into(),
+		)
+		.unwrap();
+		set(
+			&result,
+			&JsValue::from_str("density"),
+			&value.density.into(),
+		)
+		.unwrap();
 		set(&result, &JsValue::from_str("angle"), &value.angle.into()).unwrap();
-		set(&result, &JsValue::from_str("rotation"), &value.rotation.into()).unwrap();
+		set(
+			&result,
+			&JsValue::from_str("rotation"),
+			&value.rotation.into(),
+		)
+		.unwrap();
 		result
 	}
 }
@@ -120,6 +153,7 @@ impl SerializedData {
 		for wall in &self.walls {
 			data.append(&mut wall.serialize());
 		}
+		data.push(self.polygon_type.serialize());
 		data.append(&mut self.origin.serialize());
 		data.append(&mut self.radius.serialize());
 		data.append(&mut self.distance.serialize());
@@ -141,6 +175,7 @@ impl SerializedData {
 			input = new_input;
 			walls.push(wall);
 		}
+		let (input, polygon_type) = PolygonType::deserialize(input)?;
 		let (input, origin) = Point::deserialize(input)?;
 		let (input, radius) = f64::deserialize(input)?;
 		let (input, distance) = f64::deserialize(input)?;
@@ -151,6 +186,7 @@ impl SerializedData {
 			input,
 			Self {
 				walls,
+				polygon_type,
 				origin,
 				radius,
 				distance,
@@ -211,6 +247,7 @@ impl Serialize for WallBase {
 #[allow(dead_code)]
 pub fn js_serialize_data(
 	walls: Vec<JsValue>,
+	polygon_type: &str,
 	origin: JsPoint,
 	radius: f64,
 	distance: f64,
@@ -218,11 +255,13 @@ pub fn js_serialize_data(
 	angle: f64,
 	rotation: f64,
 ) -> String {
+	let polygon_type = PolygonType::from(polygon_type);
 	let data = SerializedData {
 		walls: walls
 			.into_iter()
-			.map(|wall| WallBase::from(&wall.into()))
+			.map(|wall| WallBase::from_js(&wall.into(), polygon_type))
 			.collect(),
+		polygon_type: polygon_type.into(),
 		origin: Point::from(&origin.into()),
 		radius,
 		distance,

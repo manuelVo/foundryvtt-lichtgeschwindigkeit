@@ -1,8 +1,10 @@
+#[macro_use]
+mod wasm_types;
+
 mod geometry;
 mod ptr_indexed_hash_set;
 mod raycasting;
 mod serialization;
-mod wasm_types;
 
 use raycasting::*;
 use serialization::*;

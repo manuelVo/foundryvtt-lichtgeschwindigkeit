@@ -33,7 +33,7 @@ function wasmComputePolygon(origin, radius, { type = "sight", angle = 360, densi
 	}
 
 	function logParams(force, error_fn) {
-		rustifyParams(walls, origin, radius, distance, density, angle, rotation, force, error_fn);
+		rustifyParams(walls, type, origin, radius, distance, density, angle, rotation, force, error_fn);
 	}
 
 	if (debugEnabled)
@@ -41,7 +41,7 @@ function wasmComputePolygon(origin, radius, { type = "sight", angle = 360, densi
 
 	let sight;
 	try {
-		sight = Lichtgeschwindigkeit.computePolygon(walls, origin, radius, distance, density, angle, rotation, internals);
+		sight = Lichtgeschwindigkeit.computePolygon(walls, type, origin, radius, distance, density, angle, rotation, internals);
 	}
 	catch (e) {
 		console.error(e);
@@ -60,14 +60,14 @@ function wasmComputePolygon(origin, radius, { type = "sight", angle = 360, densi
 	return { rays: null, los, fov };
 }
 
-function rustifyParams(walls, origin, radius, distance, density, angle, rotation, force = false, error_fn = console.warn) {
+function rustifyParams(walls, type, origin, radius, distance, density, angle, rotation, force = false, error_fn = console.warn) {
 	/*if (!force) {
 		if (canvas.tokens.controlled.length === 0)
 			return;
 		if (Math.abs(origin.x - canvas.tokens.controlled[0].data.x) > 50 || Math.abs(origin.y - canvas.tokens.controlled[0].data.y) > 50)
 			return;
 	}*/
-	error_fn(Lichtgeschwindigkeit.serializeData(walls, origin, radius, distance, density, angle, rotation));
+	error_fn(Lichtgeschwindigkeit.serializeData(walls, type, origin, radius, distance, density, angle, rotation));
 }
 
 function _visualizeSight(endpoints, origin, radius, distance, los, fov, tangentPoints, clear = true) {
