@@ -14,7 +14,7 @@ export async function build_scene(data) {
 		globalLight: false,
 		grid: 100,
 		gridDistance: 100,
-		gridType: GRID_TYPES.GRIDLESS,
+		gridType: CONST.GRID_TYPES.GRIDLESS,
 		initial: { x: data.origin.x, y: data.origin.y, scale: 0.5 },
 		tokenVision: true,
 		folder: folder.id,
@@ -45,10 +45,19 @@ export async function build_scene(data) {
 		x: data.origin.x - 50,
 		y: data.origin.y - 50,
 	}];
-	const scene = await Scene.create(sceneData, { renderSheet: false });
-	await scene.createEmbeddedEntity("Wall", wallData);
-	await scene.createEmbeddedEntity("Token", tokenData);
+	let scene = await Scene.create(sceneData, { renderSheet: false });
+	console.warn(scene);
+	if (["0.7.9", "0.7.10"].includes(game.data.version)) {
+		await scene.createEmbeddedEntity("Wall", wallData);
+		await scene.createEmbeddedEntity("Token", tokenData);
+	}
+	else {
+		scene = scene[0];
+		await scene.createEmbeddedDocuments("Wall", wallData);
+		await scene.createEmbeddedDocuments("Token", tokenData);
+	}
 	await scene.activate();
+
 }
 
 function getOrCreateFolder() {
