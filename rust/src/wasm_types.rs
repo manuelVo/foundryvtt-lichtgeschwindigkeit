@@ -21,9 +21,16 @@ extern "C" {
 
 	pub type JsWall;
 	pub type JsWallData;
+	pub type JsTile;
 
 	#[wasm_bindgen(method, getter)]
 	fn data(this: &JsWall) -> JsWallData;
+
+	#[wasm_bindgen(method, getter)]
+	fn roof(this: &JsWall) -> Option<JsTile>;
+
+	#[wasm_bindgen(method, getter)]
+	fn occluded(this: &JsTile) -> bool;
 
 	#[wasm_bindgen(method, getter)]
 	fn c(this: &JsWallData) -> Vec<f64>;
@@ -48,10 +55,16 @@ impl WallBase {
 	pub fn from_js(wall: &JsWall, polygon_type: PolygonType) -> Self {
 		let data = wall.data();
 		let c = data.c();
-		let sense = match polygon_type {
+		let mut sense = match polygon_type {
 			PolygonType::SIGHT => data.sense(),
 			PolygonType::SOUND => data.sound(),
 		};
+		if polygon_type == PolygonType::SIGHT {
+			let is_interior = !wall.roof().map(|roof| roof.occluded()).unwrap_or(true);
+			if is_interior {
+				sense = WallSenseType::NORMAL;
+			}
+		}
 		Self::new(
 			Point::new(c[0].round(), c[1].round()),
 			Point::new(c[2].round(), c[3].round()),
@@ -63,7 +76,7 @@ impl WallBase {
 	}
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum PolygonType {
 	SIGHT = 0,
 	SOUND = 1,
