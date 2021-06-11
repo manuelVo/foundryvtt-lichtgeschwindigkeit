@@ -91,7 +91,6 @@ impl SerializeByte for PolygonType {
 
 pub struct SerializedData {
 	pub walls: Vec<WallBase>,
-	pub polygon_type: PolygonType,
 	pub origin: Point,
 	pub radius: f64,
 	pub distance: f64,
@@ -114,8 +113,6 @@ impl From<SerializedData> for Object {
 				.collect::<Array>(),
 		)
 		.unwrap();
-		// This isn't required in js so we save ourselfs from writing the conversion of PolygonType into String
-		//set(&result, &JsValue::from_str("type"), &value.polygon_type.into()).unwrap();
 		set(&result, &JsValue::from_str("origin"), &value.origin.into()).unwrap();
 		set(&result, &JsValue::from_str("radius"), &value.radius.into()).unwrap();
 		set(
@@ -153,7 +150,6 @@ impl SerializedData {
 		for wall in &self.walls {
 			data.append(&mut wall.serialize());
 		}
-		data.push(self.polygon_type.serialize());
 		data.append(&mut self.origin.serialize());
 		data.append(&mut self.radius.serialize());
 		data.append(&mut self.distance.serialize());
@@ -175,7 +171,6 @@ impl SerializedData {
 			input = new_input;
 			walls.push(wall);
 		}
-		let (input, polygon_type) = PolygonType::deserialize(input)?;
 		let (input, origin) = Point::deserialize(input)?;
 		let (input, radius) = f64::deserialize(input)?;
 		let (input, distance) = f64::deserialize(input)?;
@@ -186,7 +181,6 @@ impl SerializedData {
 			input,
 			Self {
 				walls,
-				polygon_type,
 				origin,
 				radius,
 				distance,
@@ -261,7 +255,6 @@ pub fn js_serialize_data(
 			.into_iter()
 			.map(|wall| WallBase::from_js(&wall.into(), polygon_type))
 			.collect(),
-		polygon_type: polygon_type.into(),
 		origin: Point::from(&origin.into()),
 		radius,
 		distance,

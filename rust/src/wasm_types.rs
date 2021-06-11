@@ -85,17 +85,6 @@ impl From<&str> for PolygonType {
 	}
 }
 
-impl TryFrom<usize> for PolygonType {
-	type Error = ();
-	fn try_from(value: usize) -> Result<Self, Self::Error> {
-		match value {
-			x if x == Self::SIGHT as usize => Ok(Self::SIGHT),
-			x if x == Self::SOUND as usize => Ok(Self::SOUND),
-			_ => Err(()),
-		}
-	}
-}
-
 #[wasm_bindgen]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum DoorType {
