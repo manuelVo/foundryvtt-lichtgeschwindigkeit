@@ -18,9 +18,7 @@ pub fn is_smaller_relative(angle1: f64, angle2: f64) -> bool {
 }
 
 pub fn is_intersection_on_wall(intersection: Point, wall: &Wall) -> bool {
-	if intersection.x == wall.p1.x && intersection.y == wall.p1.y
-		|| intersection.x == wall.p2.x && intersection.y == wall.p2.y
-	{
+	if intersection.is_same_as(&wall.p1) || intersection.is_same_as(&wall.p2) {
 		return false;
 	}
 	if wall.line.is_vertical() || wall.line.m > 1.0 {
