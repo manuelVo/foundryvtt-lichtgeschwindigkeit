@@ -121,12 +121,16 @@ fn calculate_los(
 							}
 						}
 						if intersection.is_none() {
-							// Check if the end point of the new wall is further away from the origin than the end point of the currently closest wall. If so the new wall is completely covered - skip it.
+							// Check if the endpoint is before or behind the currently closest wall - if it is behind the wall is completely covered, skip it.
+							let intersection = current_ray_line
+								.intersection(&closest_wall.wall.line)
+								.unwrap();
+
 							// For optimization purposes we use Math.pow instead of Math.hypot, because that way we save ourselfs of doing an expensive Math.sqrt, whcih wouldn't change the result of the comparison anyway
-							if (origin.x - wall.end.borrow().point.x).powi(2)
-								+ (origin.y - wall.end.borrow().point.y).powi(2)
-								> (origin.x - closest_wall.wall.end.borrow().point.x).powi(2)
-									+ (origin.y - closest_wall.wall.end.borrow().point.y).powi(2)
+							if (origin.x - endpoint.point.x).powi(2)
+								+ (origin.y - endpoint.point.y).powi(2)
+								> (origin.x - intersection.x).powi(2)
+									+ (origin.y - intersection.y).powi(2)
 							{
 								continue;
 							}
