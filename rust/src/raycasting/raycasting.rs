@@ -157,7 +157,11 @@ fn calculate_los(
 					.intersection(&old_closest_wall.wall.line)
 					.unwrap();
 				if closest_los_wall.is_none()
-					|| closest_los_wall.as_ref().unwrap().intersection != intersection
+					|| !closest_los_wall
+						.as_ref()
+						.unwrap()
+						.intersection
+						.is_same_as(&intersection)
 				{
 					los_points.push(FovPoint {
 						point: intersection,
