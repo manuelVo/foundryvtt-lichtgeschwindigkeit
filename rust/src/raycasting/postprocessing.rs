@@ -249,6 +249,12 @@ pub fn fill_gaps(
 					previous_angle -= 2.0 * PI;
 				}
 				let mut a = previous_angle;
+				let first_filler =
+					Point::new(origin.x - (a.cos() * radius), origin.y - (a.sin() * radius));
+				if !first_filler.is_same_as(&previous.point) {
+					output.push(first_filler);
+				}
+				a += radial_density;
 				while a < current.angle {
 					output.push(Point::new(
 						origin.x - (a.cos() * radius),
@@ -256,10 +262,13 @@ pub fn fill_gaps(
 					));
 					a += radial_density;
 				}
-				output.push(Point::new(
+				let last_filler = Point::new(
 					origin.x - (current.angle.cos() * radius),
 					origin.y - (current.angle.sin() * radius),
-				));
+				);
+				if !last_filler.is_same_as(&current.point) {
+					output.push(last_filler);
+				}
 			}
 			output.push(current.point);
 		}

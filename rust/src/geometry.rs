@@ -48,6 +48,11 @@ impl Point {
 	pub fn distance_to(&self, other: &Self) -> f64 {
 		(self.x - other.x).hypot(self.y - other.y)
 	}
+
+	pub fn is_same_as(&self, other: &Self) -> bool {
+		let e = 0.000001;
+		(self.x - other.x).abs() < e && (self.y - other.y).abs() < e
+	}
 }
 
 #[derive(Debug, Copy, Clone)]
