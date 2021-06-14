@@ -1,12 +1,63 @@
 use crate::geometry::Point;
-use crate::raycasting::WallBase;
-use std::convert::TryFrom;
+use crate::raycasting::types::{PolygonType, VisionAngle, WallBase};
+use crate::raycasting::{compute_polygon, DoorState, DoorType, WallDirection, WallSenseType};
+use js_sys::{Array, Object};
 use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen(js_name=computePolygon)]
+#[allow(dead_code)]
+pub fn js_compute_polygon(
+	js_walls: Vec<JsValue>,
+	polygon_type: &str,
+	origin: JsValue,
+	radius: f64,
+	distance: f64,
+	density: f64,
+	angle: f64,
+	rotation: f64,
+	internals_transfer: Option<InternalsTransfer>,
+) -> Object {
+	let polygon_type = PolygonType::from(polygon_type);
+	let mut walls = Vec::with_capacity(js_walls.len());
+	for wall in js_walls {
+		walls.push(WallBase::from_js(&wall.into(), polygon_type));
+	}
+	let origin = Point::from(&origin.into());
+	let (los, fov) = compute_polygon(
+		walls,
+		origin,
+		radius,
+		distance,
+		density,
+		VisionAngle::from_rotation_and_angle(rotation, angle, origin),
+		internals_transfer,
+	);
+	let result = Object::new();
+	js_sys::Reflect::set(
+		&result,
+		&JsValue::from_str("los"),
+		&los.into_iter().map(JsValue::from).collect::<Array>(),
+	)
+	.unwrap();
+	js_sys::Reflect::set(
+		&result,
+		&JsValue::from_str("fov"),
+		&fov.into_iter().map(JsValue::from).collect::<Array>(),
+	)
+	.unwrap();
+	result
+}
+
+#[allow(dead_code)]
+#[wasm_bindgen(js_name=wipeCache)]
+pub fn wipe_cache() {
+	crate::raycasting::prepare::wipe_cache();
+}
 
 #[allow(unused)]
 macro_rules! log {
 	( $( $t:tt )* ) => {
-		crate::wasm_types::log(&format!( $( $t )* ));
+		log(&format!( $( $t )* ));
 	};
 }
 
@@ -76,12 +127,6 @@ impl WallBase {
 	}
 }
 
-#[derive(Copy, Clone, PartialEq)]
-pub enum PolygonType {
-	SIGHT = 0,
-	SOUND = 1,
-}
-
 impl From<&str> for PolygonType {
 	fn from(value: &str) -> Self {
 		match value {
@@ -99,81 +144,9 @@ impl From<&str> for PolygonType {
 }
 
 #[wasm_bindgen]
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum DoorType {
-	NONE = 0,
-	DOOR = 1,
-	SECRET = 2,
-}
+extern "C" {
+	pub type InternalsTransfer;
 
-impl TryFrom<usize> for DoorType {
-	type Error = ();
-	fn try_from(value: usize) -> Result<Self, Self::Error> {
-		match value {
-			x if x == Self::NONE as usize => Ok(Self::NONE),
-			x if x == Self::DOOR as usize => Ok(Self::DOOR),
-			x if x == Self::SECRET as usize => Ok(Self::SECRET),
-			_ => Err(()),
-		}
-	}
-}
-
-#[wasm_bindgen]
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum DoorState {
-	CLOSED = 0,
-	OPEN = 1,
-	LOCKED = 2,
-}
-
-impl TryFrom<usize> for DoorState {
-	type Error = ();
-	fn try_from(value: usize) -> Result<Self, Self::Error> {
-		match value {
-			x if x == Self::CLOSED as usize => Ok(Self::CLOSED),
-			x if x == Self::OPEN as usize => Ok(Self::OPEN),
-			x if x == Self::LOCKED as usize => Ok(Self::LOCKED),
-			_ => Err(()),
-		}
-	}
-}
-
-#[wasm_bindgen]
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum WallSenseType {
-	NONE = 0,
-	NORMAL = 1,
-	LIMITED = 2,
-}
-
-impl TryFrom<usize> for WallSenseType {
-	type Error = ();
-	fn try_from(value: usize) -> Result<Self, Self::Error> {
-		match value {
-			x if x == Self::NONE as usize => Ok(Self::NONE),
-			x if x == Self::NORMAL as usize => Ok(Self::NORMAL),
-			x if x == Self::LIMITED as usize => Ok(Self::LIMITED),
-			_ => Err(()),
-		}
-	}
-}
-
-#[wasm_bindgen]
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum WallDirection {
-	BOTH = 0,
-	LEFT = 1,
-	RIGHT = 2,
-}
-
-impl TryFrom<usize> for WallDirection {
-	type Error = ();
-	fn try_from(value: usize) -> Result<Self, Self::Error> {
-		match value {
-			x if x == Self::BOTH as usize => Ok(Self::BOTH),
-			x if x == Self::LEFT as usize => Ok(Self::LEFT),
-			x if x == Self::RIGHT as usize => Ok(Self::RIGHT),
-			_ => Err(()),
-		}
-	}
+	#[wasm_bindgen(method, setter)]
+	pub fn set_endpoints(this: &InternalsTransfer, endpoints: Vec<JsValue>);
 }

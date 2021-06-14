@@ -1,8 +1,7 @@
 use wasm_bindgen::prelude::*;
 
 use crate::geometry::{JsPoint, Line, Point};
-use crate::raycasting::WallBase;
-use crate::wasm_types::{DoorState, DoorType, PolygonType, WallDirection, WallSenseType};
+use crate::raycasting::*;
 use js_sys::{Array, Object};
 use nom::bytes::complete::take;
 use nom::IResult;
