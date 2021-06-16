@@ -17,12 +17,10 @@ pub fn calculate_fov(
 		let los_point = los_points[i];
 		let distance = origin.distance_to(&los_point.point);
 		if distance < radius {
-			// TODO Properly handle i == 0
 			if i == 0 {
 				fov_points.push(los_point);
 			} else {
 				let previous_los = los_points[i - 1];
-				// TODO What if there is no previous?
 				let previous_fov_gap = fov_points
 					.last()
 					.map(|previous| previous.gap)
