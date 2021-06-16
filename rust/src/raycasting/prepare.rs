@@ -42,6 +42,14 @@ pub fn prepare_data(
 			.remove(&wall.p2)
 			.unwrap_or_else(|| Rc::new(RefCell::new(Endpoint::new(origin, wall.p2))));
 
+		// Check if the wall's line goes through the light sources center.
+		// If so, the wall doesn't have any width and doesn't influence light calculation
+		if e1.borrow().angle == e2.borrow().angle {
+			endpoints.insert(wall.p1, e1);
+			endpoints.insert(wall.p2, e2);
+			continue;
+		}
+
 		let mut start;
 		let mut end;
 		if e1.borrow().angle < e2.borrow().angle {
