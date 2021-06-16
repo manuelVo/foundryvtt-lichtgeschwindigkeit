@@ -23,11 +23,11 @@ pub fn compute_polygon(
 ) -> (Vec<Point>, Vec<Point>) {
 	let (endpoints, mut start_walls) = prepare_data(wall_bases, origin, &vision_angle);
 
-	let (mut los_points, start_gap_los, start_gap_fov) =
+	let (mut los_points, start_gap_los, mut start_gap_fov) =
 		calculate_los(origin, radius, &endpoints, &mut start_walls);
 
 	if let Some(vision_angle) = vision_angle {
-		los_points = add_vision_wedge(los_points, origin, vision_angle);
+		los_points = add_vision_wedge(los_points, origin, vision_angle, &mut start_gap_fov);
 	}
 
 	let mut fov_points = calculate_fov(origin, radius, &los_points, start_gap_fov);

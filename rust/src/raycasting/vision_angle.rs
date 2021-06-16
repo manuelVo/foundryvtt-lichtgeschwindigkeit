@@ -189,6 +189,7 @@ pub fn add_vision_wedge(
 	mut los_points: Vec<FovPoint>,
 	origin: Point,
 	vision_angle: VisionAngle,
+	start_gap_fov: &mut bool,
 ) -> Vec<FovPoint> {
 	let mut start_index = los_points.len();
 	let mut end_index = los_points.len();
@@ -203,6 +204,7 @@ pub fn add_vision_wedge(
 		visible_points_from_start = &los_points;
 		visible_points_to_end = &[];
 		start_end_swapped = false;
+		*start_gap_fov = false;
 	} else {
 		for i in 0..los_points.len() {
 			// TODO Check if > or >=
