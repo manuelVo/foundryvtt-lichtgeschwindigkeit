@@ -1,7 +1,7 @@
 export async function build_scene(data) {
 	const points = data.walls.map(wall => [wall.p1, wall.p2]).flat();
-	const width = points.map(p => p.x).reduce((max, current) => max > current ? max : current);
-	const height = points.map(p => p.y).reduce((max, current) => max > current ? max : current);
+	let width = points.map(p => p.x).reduce((max, current) => max > current ? max : current, data.origin.x);
+	let height = points.map(p => p.y).reduce((max, current) => max > current ? max : current, data.origin.y);
 	const now = new Date();
 	const name = `${now.getFullYear()}-${now.getMonth()}-${now.getDay()} ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
 	const folder = await getOrCreateFolder();
