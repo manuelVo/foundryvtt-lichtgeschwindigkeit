@@ -13,7 +13,8 @@
 		}
 	],
 	"esmodules": [
-		"js/main.js"
+		"js/fog.js",
+		"js/raycasting.js"
 	],
 	"url": "https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit",
 	"download": "https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit/releases/download/v1.0.0/lichtgeschwindigkeit-1.0.0.zip",
