@@ -22,6 +22,9 @@ pub fn prepare_data(
 	let mut restricted_walls = Vec::new();
 
 	for wall in wall_bases {
+		if wall.p1 == wall.p2 {
+			continue;
+		}
 		if (wall.line.is_vertical() && wall.p1.x == origin.x)
 			|| (wall.line.is_horizontal() && wall.line.p1.y == origin.y)
 		{
