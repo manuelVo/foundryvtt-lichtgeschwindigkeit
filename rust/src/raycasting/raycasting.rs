@@ -127,11 +127,14 @@ fn calculate_los(
 								.unwrap();
 
 							// For optimization purposes we use Math.pow instead of Math.hypot, because that way we save ourselfs of doing an expensive Math.sqrt, whcih wouldn't change the result of the comparison anyway
-							if (origin.x - endpoint.point.x).powi(2)
-								+ (origin.y - endpoint.point.y).powi(2)
-								> (origin.x - intersection.x).powi(2)
-									+ (origin.y - intersection.y).powi(2)
-							{
+							let endpoint_distance = (origin.x - endpoint.point.x).powi(2)
+								+ (origin.y - endpoint.point.y).powi(2);
+							let intersection_distance = (origin.x - intersection.x).powi(2)
+								+ (origin.y - intersection.y).powi(2);
+
+							// TODO Cull T-Intersections that are oriented away from the current wall
+							// endpoint_distance > intersection_distance while respecting float inprecisions
+							if endpoint_distance - intersection_distance > 0.00005 {
 								continue;
 							}
 						}
