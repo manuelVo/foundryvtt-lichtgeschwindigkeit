@@ -1,3 +1,5 @@
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/staebchenfisch)
+
 # Lichtgeschwindigkeit
 
 Lichtgeschwindigkeit improves the speed and accuracy of Foundries ligthing calculation. On the maps used for benchmarking, Lichtgeschwindigkeit is around 2x-3x faster than Foundries native lighting calculation.
