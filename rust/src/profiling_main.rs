@@ -2,6 +2,8 @@ mod geometry;
 mod ptr_indexed_hash_set;
 mod raycasting;
 mod serialization;
+#[cfg(test)]
+mod tests;
 
 use raycasting::*;
 use serialization::*;
@@ -9,7 +11,7 @@ use serialization::*;
 use std::fs::read_to_string;
 
 fn main() {
-	let data = SerializedData::deserialize(&read_to_string("data.txt").unwrap());
+	let data = RaycastingCall::deserialize_ascii85(&read_to_string("data.txt").unwrap());
 
 	let mut sum = 0;
 	let mut los = None;

@@ -88,7 +88,7 @@ impl SerializeByte for PolygonType {
 	}
 }
 
-pub struct SerializedData {
+pub struct RaycastingCall {
 	pub walls: Vec<WallBase>,
 	pub origin: Point,
 	pub radius: f64,
@@ -98,8 +98,8 @@ pub struct SerializedData {
 	pub rotation: f64,
 }
 
-impl From<SerializedData> for Object {
-	fn from(value: SerializedData) -> Self {
+impl From<RaycastingCall> for Object {
+	fn from(value: RaycastingCall) -> Self {
 		use js_sys::Reflect::set;
 		let result = Object::new();
 		set(
@@ -137,8 +137,8 @@ impl From<SerializedData> for Object {
 	}
 }
 
-impl SerializedData {
-	pub fn serialize(&self) -> String {
+impl Serialize for RaycastingCall {
+	fn serialize(&self) -> Vec<u8> {
 		let mut data = Vec::new();
 		data.append(
 			&mut u32::try_from(self.walls.len())
@@ -155,12 +155,10 @@ impl SerializedData {
 		data.append(&mut self.density.serialize());
 		data.append(&mut self.angle.serialize());
 		data.append(&mut self.rotation.serialize());
-		let mut compressed = compress(&data, Format::Zlib, CompressionLevel::BestSize).unwrap();
-		compressed.insert(0, 0u8);
-		ascii85::encode(&compressed)
+		data
 	}
 
-	fn nom_deserialize(input: &[u8]) -> IResult<&[u8], Self> {
+	fn deserialize(input: &[u8]) -> IResult<&[u8], Self> {
 		let (input, walls_len) = take(size_of::<u32>())(input)?;
 		let walls_len = u32::from_be_bytes(walls_len.try_into().unwrap()) as usize;
 		let mut walls = Vec::with_capacity(walls_len);
@@ -189,15 +187,24 @@ impl SerializedData {
 			},
 		))
 	}
+}
 
-	pub fn deserialize(input: &str) -> Self {
+impl RaycastingCall {
+	pub fn serialize_ascii85(&self) -> String {
+		let data = self.serialize();
+		let mut compressed = compress(&data, Format::Zlib, CompressionLevel::BestSize).unwrap();
+		compressed.insert(0, 0u8);
+		ascii85::encode(&compressed)
+	}
+
+	pub fn deserialize_ascii85(input: &str) -> Self {
 		let input = ascii85::decode(input).unwrap();
 		if input[0] != 0 {
 			panic!("Data stream has a wrong version number.");
 		}
 		let input = &input[1..];
 		let (input, _) = &decompress(input, Format::Zlib).unwrap();
-		Self::nom_deserialize(input).unwrap().1
+		Self::deserialize(&input).unwrap().1
 	}
 }
 
@@ -249,7 +256,7 @@ pub fn js_serialize_data(
 	rotation: f64,
 ) -> String {
 	let polygon_type = PolygonType::from(polygon_type);
-	let data = SerializedData {
+	let data = RaycastingCall {
 		walls: walls
 			.into_iter()
 			.map(|wall| WallBase::from_js(&wall.into(), polygon_type))
@@ -261,12 +268,12 @@ pub fn js_serialize_data(
 		angle,
 		rotation,
 	};
-	data.serialize()
+	data.serialize_ascii85()
 }
 
 #[wasm_bindgen(js_name=deserializeData)]
 #[allow(dead_code)]
 pub fn js_deserialize_data(str: &str) -> Object {
-	let data = SerializedData::deserialize(str);
+	let data = RaycastingCall::deserialize_ascii85(str);
 	data.into()
 }
