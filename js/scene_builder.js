@@ -5,6 +5,7 @@ export async function build_scene(data) {
 	const now = new Date();
 	const name = `${now.getFullYear()}-${now.getMonth()}-${now.getDay()} ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
 	const folder = await getOrCreateFolder();
+	console.warn(folder);
 	const sceneData = [{
 		name: name,
 		active: false,
@@ -46,7 +47,6 @@ export async function build_scene(data) {
 		y: data.origin.y - 50,
 	}];
 	let scene = await Scene.create(sceneData, { renderSheet: false });
-	console.warn(scene);
 	if (["0.7.9", "0.7.10"].includes(game.data.version)) {
 		await scene.createEmbeddedEntity("Wall", wallData);
 		await scene.createEmbeddedEntity("Token", tokenData);
@@ -73,5 +73,5 @@ function getOrCreateFolder() {
 		sorting: "a",
 		type: "Scene",
 	}];
-	return Folder.create(folderData);
+	return Folder.create(folderData).then(folders => folders[0]);
 }
