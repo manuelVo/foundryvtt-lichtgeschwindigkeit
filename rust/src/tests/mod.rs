@@ -8,7 +8,7 @@ use crate::{
 fn run_test(filename: &str) {
 	let test_root_dir = "tests/".to_owned();
 	let test = deserialize_ascii85::<TestCase>(
-		&read_to_string(test_root_dir + filename + ".txt").unwrap(),
+		&read_to_string(test_root_dir + filename + ".ascii85").unwrap(),
 	);
 	let (los, fov) = compute_polygon(
 		test.call.walls,
