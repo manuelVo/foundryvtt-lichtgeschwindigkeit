@@ -8,7 +8,8 @@ init().then(() => {
 	Hooks.on("updateWall", Lichtgeschwindigkeit.wipeCache);
 	Hooks.on("deleteWall", Lichtgeschwindigkeit.wipeCache);
 	window.lichtgeschwindikgeit = {
-		build_scene
+		build_scene,
+		generate_test,
 	}
 });
 
@@ -122,6 +123,21 @@ function build_scene() {
 					let data = document.getElementById("lichtgeschwindigkeit-debug-input").value;
 					data = Lichtgeschwindigkeit.deserializeData(data);
 					import("./scene_builder.js").then((module) => module.build_scene(data));
+				}
+			}
+		}
+	}).render(true);
+}
+
+function generate_test() {
+	new Dialog({
+		content: "<textarea id='lichtgeschwindigkeit-debug-input'></textarea>",
+		buttons: {
+			ok: {
+				icon: '<i class="fas fa-check"></i>',
+				callback: html => {
+					let data = document.getElementById("lichtgeschwindigkeit-debug-input").value;
+					console.warn(Lichtgeschwindigkeit.generateTest(data));
 				}
 			}
 		}

@@ -10,7 +10,7 @@ use std::fmt::Debug;
 use std::mem::size_of;
 use yazi::{compress, decompress, CompressionLevel, Format};
 
-trait Serialize {
+pub trait Serialize {
 	fn serialize(&self) -> Vec<u8>;
 	fn deserialize(input: &[u8]) -> IResult<&[u8], Self>
 	where
@@ -58,6 +58,30 @@ impl Serialize for Point {
 	}
 }
 
+impl<T: Serialize> Serialize for Vec<T> {
+	fn serialize(&self) -> Vec<u8> {
+		let mut data = Vec::new();
+		data.append(&mut u32::try_from(self.len()).unwrap().to_be_bytes().into());
+		for wall in self {
+			data.append(&mut wall.serialize());
+		}
+		data
+	}
+
+	fn deserialize(input: &[u8]) -> IResult<&[u8], Self> {
+		let (input, len) = take(size_of::<u32>())(input)?;
+		let len = u32::from_be_bytes(len.try_into().unwrap()) as usize;
+		let mut vector = Vec::with_capacity(len);
+		let mut input = input;
+		for _ in 0..len {
+			let (new_input, entry) = T::deserialize(input)?;
+			input = new_input;
+			vector.push(entry);
+		}
+		Ok((input, vector))
+	}
+}
+
 impl SerializeByte for WallSenseType {
 	fn serialize(&self) -> u8 {
 		return *self as u8;
@@ -86,6 +110,46 @@ impl SerializeByte for PolygonType {
 	fn serialize(&self) -> u8 {
 		*self as u8
 	}
+}
+
+pub struct TestCase {
+	pub call: RaycastingCall,
+	pub los: Vec<Point>,
+	pub fov: Vec<Point>,
+}
+
+impl Serialize for TestCase {
+	fn serialize(&self) -> Vec<u8> {
+		let mut data = Vec::new();
+		data.append(&mut self.call.serialize());
+		data.append(&mut self.los.serialize());
+		data.append(&mut self.fov.serialize());
+		data
+	}
+
+	fn deserialize(input: &[u8]) -> IResult<&[u8], Self> {
+		let (input, call) = RaycastingCall::deserialize(input)?;
+		let (input, los) = Vec::deserialize(input)?;
+		let (input, fov) = Vec::deserialize(input)?;
+		Ok((input, Self { call, los, fov }))
+	}
+}
+
+pub fn serialize_ascii85<T: Serialize>(data: T) -> String {
+	let data = data.serialize();
+	let mut compressed = compress(&data, Format::Zlib, CompressionLevel::BestSize).unwrap();
+	compressed.insert(0, 0u8);
+	ascii85::encode(&compressed)
+}
+
+pub fn deserialize_ascii85<T: Serialize>(input: &str) -> T {
+	let input = ascii85::decode(input).unwrap();
+	if input[0] != 0 {
+		panic!("Data stream has a wrong version number.");
+	}
+	let input = &input[1..];
+	let (input, _) = &decompress(input, Format::Zlib).unwrap();
+	T::deserialize(&input).unwrap().1
 }
 
 pub struct RaycastingCall {
@@ -140,15 +204,7 @@ impl From<RaycastingCall> for Object {
 impl Serialize for RaycastingCall {
 	fn serialize(&self) -> Vec<u8> {
 		let mut data = Vec::new();
-		data.append(
-			&mut u32::try_from(self.walls.len())
-				.unwrap()
-				.to_be_bytes()
-				.into(),
-		);
-		for wall in &self.walls {
-			data.append(&mut wall.serialize());
-		}
+		data.append(&mut self.walls.serialize());
 		data.append(&mut self.origin.serialize());
 		data.append(&mut self.radius.serialize());
 		data.append(&mut self.distance.serialize());
@@ -159,15 +215,7 @@ impl Serialize for RaycastingCall {
 	}
 
 	fn deserialize(input: &[u8]) -> IResult<&[u8], Self> {
-		let (input, walls_len) = take(size_of::<u32>())(input)?;
-		let walls_len = u32::from_be_bytes(walls_len.try_into().unwrap()) as usize;
-		let mut walls = Vec::with_capacity(walls_len);
-		let mut input = input;
-		for _ in 0..walls_len {
-			let (new_input, wall) = WallBase::deserialize(input)?;
-			input = new_input;
-			walls.push(wall);
-		}
+		let (input, walls) = Vec::deserialize(input)?;
 		let (input, origin) = Point::deserialize(input)?;
 		let (input, radius) = f64::deserialize(input)?;
 		let (input, distance) = f64::deserialize(input)?;
@@ -186,25 +234,6 @@ impl Serialize for RaycastingCall {
 				rotation,
 			},
 		))
-	}
-}
-
-impl RaycastingCall {
-	pub fn serialize_ascii85(&self) -> String {
-		let data = self.serialize();
-		let mut compressed = compress(&data, Format::Zlib, CompressionLevel::BestSize).unwrap();
-		compressed.insert(0, 0u8);
-		ascii85::encode(&compressed)
-	}
-
-	pub fn deserialize_ascii85(input: &str) -> Self {
-		let input = ascii85::decode(input).unwrap();
-		if input[0] != 0 {
-			panic!("Data stream has a wrong version number.");
-		}
-		let input = &input[1..];
-		let (input, _) = &decompress(input, Format::Zlib).unwrap();
-		Self::deserialize(&input).unwrap().1
 	}
 }
 
@@ -268,12 +297,32 @@ pub fn js_serialize_data(
 		angle,
 		rotation,
 	};
-	data.serialize_ascii85()
+	serialize_ascii85(data)
 }
 
 #[wasm_bindgen(js_name=deserializeData)]
 #[allow(dead_code)]
 pub fn js_deserialize_data(str: &str) -> Object {
-	let data = RaycastingCall::deserialize_ascii85(str);
+	let data = deserialize_ascii85::<RaycastingCall>(str);
 	data.into()
+}
+
+#[wasm_bindgen(js_name=generateTest)]
+#[allow(dead_code)]
+pub fn js_generate_test(str: &str) -> String {
+	let data = deserialize_ascii85::<RaycastingCall>(str);
+	let (los, fov) = compute_polygon(
+		data.walls.clone(),
+		data.origin,
+		data.radius,
+		data.distance,
+		data.density,
+		VisionAngle::from_rotation_and_angle(data.rotation, data.angle, data.origin),
+		None,
+	);
+	serialize_ascii85(TestCase {
+		call: data,
+		los,
+		fov,
+	})
 }

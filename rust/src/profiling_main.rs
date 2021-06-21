@@ -11,8 +11,7 @@ use serialization::*;
 use std::fs::read_to_string;
 
 fn main() {
-	let data = RaycastingCall::deserialize_ascii85(&read_to_string("data.txt").unwrap());
-
+	let data = deserialize_ascii85::<RaycastingCall>(&read_to_string("data.txt").unwrap());
 	let mut sum = 0;
 	let mut los = None;
 	for _i in 0..1 {
