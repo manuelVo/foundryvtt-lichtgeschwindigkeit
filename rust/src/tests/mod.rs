@@ -41,5 +41,6 @@ macro_rules! raytracing_test (
 );
 
 raytracing_test!(zero_width_walls, "zero_width_walls");
+raytracing_test!(directional_walls_issue_4, "4-directional_walls");
 raytracing_test!(t_junction_issue_5, "5-t_junction");
 raytracing_test!(zero_length_walls_issue_6, "6-zero_length_walls");
