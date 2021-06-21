@@ -181,7 +181,10 @@ impl Wall {
 				WallDirection::RIGHT => PI,
 				WallDirection::BOTH => unreachable!(),
 			};
-			let angle = (base.p1.y - base.p2.y).atan2(base.p1.x - base.p2.x) + offset;
+			let mut angle = (base.p1.y - base.p2.y).atan2(base.p1.x - base.p2.x) + offset;
+			if angle > PI {
+				angle -= 2.0 * PI;
+			}
 			see_through_angle = Some(angle);
 		}
 		Self {
