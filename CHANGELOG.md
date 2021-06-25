@@ -1,6 +1,6 @@
 ## 1.1.3
 ### Bugfixes
-- Fixed a bug that caused the vision calculation to crash if a token was sitting precisely on top of a wall
+- Fixed a bug that caused the vision calculation to crash if a token was sitting precisely on top of a wall ([#10](https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit/issues/10))
 
 ### Compatibility
 - Lichtgeschwindigkeit is confirmed to work with Foundry 0.8.8
