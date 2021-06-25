@@ -1,3 +1,11 @@
+## 1.1.3
+### Bugfixes
+- Fixed a bug that caused the vision calculation to crash if a token was sitting precisely on top of a wall
+
+### Compatibility
+- Lichtgeschwindigkeit is confirmed to work with Foundry 0.8.8
+
+
 ## 1.1.2
 ### Bugfixes
 Fixed bugs that could cause the vision to be calculated incorrectly in scenes with
