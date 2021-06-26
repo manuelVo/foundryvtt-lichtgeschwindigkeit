@@ -51,6 +51,9 @@ function wasmComputePolygon(origin, radius, { type = "sight", angle = 360, densi
 		throw e;
 	}
 
+	// Lichtgeschwindigkeit improves the speed of PIXI.Polygon.contains.
+	// Those improvements outperform the improvements done by SourcePolygon.
+	// As a result we don't construct SourcePolygon here.
 	const los = new PIXI.Polygon(...sight.los);
 	const fov = new PIXI.Polygon(...sight.fov);
 

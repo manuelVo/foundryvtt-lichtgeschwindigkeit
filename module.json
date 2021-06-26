@@ -14,6 +14,7 @@
 	],
 	"esmodules": [
 		"js/fog.js",
+		"js/polygon.js",
 		"js/raycasting.js"
 	],
 	"url": "https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit",

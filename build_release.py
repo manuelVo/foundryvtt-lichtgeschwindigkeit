@@ -9,7 +9,7 @@ import zipfile
 wasm_pack = Path("~/.cargo/bin/wasm-pack").expanduser()
 
 root_files = ["module.json", "README.md", "CHANGELOG.md", "LICENSE"]
-js_files = ["fog.js", "raycasting.js"]
+js_files = ["fog.js", "polygon.js", "raycasting.js"]
 wasm_files = ["lichtgeschwindigkeit_bg.wasm", "lichtgeschwindigkeit.js"]
 output_dir = Path("artifact")
 js_dir = Path("js")
