@@ -1,3 +1,8 @@
+## 1.2.0
+### New features
+- Lichtgeschwindigkeit now ships an improved, faster version of `PIXI.Polygon`. This improves the speed of lighting calculation and potentially improves speed in other areas in Foundry that make use of Polygons as well.
+
+
 ## 1.1.3
 ### Bugfixes
 - Fixed a bug that caused the vision calculation to crash if a token was sitting precisely on top of a wall ([#10](https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit/issues/10))
