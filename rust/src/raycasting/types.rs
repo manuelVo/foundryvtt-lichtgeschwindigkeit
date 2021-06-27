@@ -134,7 +134,9 @@ impl VisionAngle {
 		if angle >= 360.0 || angle <= 0.0 {
 			return None;
 		}
-		let mut rotation = rotation.to_radians();
+
+		// In Foundry, 0° means down. In Lichtgeschwindigkeit, 0° defaults to left. We need to adjust the angle accordingly.
+		let mut rotation = (rotation - 90.0).to_radians();
 		let angle = angle.to_radians();
 
 		// Normalize the direction
