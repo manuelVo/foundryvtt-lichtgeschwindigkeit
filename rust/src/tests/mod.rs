@@ -40,6 +40,7 @@ macro_rules! raytracing_test (
 	};
 );
 
+raytracing_test!(limited_vision_angle, "limited_vision_angle");
 raytracing_test!(zero_width_walls, "zero_width_walls");
 raytracing_test!(directional_walls_issue_4, "4-directional_walls");
 raytracing_test!(t_junction_issue_5, "5-t_junction");
