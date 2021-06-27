@@ -1,5 +1,5 @@
 Hooks.on("init", () => {
-	const { major, minor, bugfix } = game.data.version.split(".");
+	const [ major, minor, bugfix ] = game.data.version.split(".");
 	if (major == 0 && minor == 7)
 		return;
 	if (major == 0 && minor == 8 && bugfix < 7) {
