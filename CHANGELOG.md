@@ -1,3 +1,8 @@
+## 1.2.1
+### Bugfixes
+- Vision with restricted angle is now calculated at the correct angle (0° now means down, as in vanilla foundry. Before 0° meant left in Lichtgeschwindigkeit).
+- Fixed a bug that would stop a tokens movement mid-animation on scenes with Fog of War enabled when using Foundry version 0.8.6 or older.
+
 ## 1.2.0
 ### New features
 - Lichtgeschwindigkeit now ships an improved, faster version of `PIXI.Polygon`. This improves the speed of lighting calculation and potentially improves speed in other areas in Foundry that make use of Polygons as well.
