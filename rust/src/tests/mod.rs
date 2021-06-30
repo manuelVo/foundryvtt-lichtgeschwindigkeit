@@ -45,8 +45,23 @@ raytracing_test!(zero_width_walls, "zero_width_walls");
 raytracing_test!(directional_walls_issue_4, "4-directional_walls");
 raytracing_test!(t_junction_issue_5, "5-t_junction");
 raytracing_test!(zero_length_walls_issue_6, "6-zero_length_walls");
-raytracing_test!(overflow_wall_both_points_seen_issue_15, "15-overflow_wall_both_points_seen");
-raytracing_test!(overflow_wall_top_point_seen_issue_15, "15-overflow_wall_top_point_seen");
-raytracing_test!(overflow_wall_bottom_point_seen_issue_15, "15-overflow_wall_bottom_point_seen");
-raytracing_test!(overflow_wall_no_point_seen_wall_close_issue_15, "15-overflow_wall_no_point_seen_wall_close");
-raytracing_test!(overflow_wall_no_point_seen_wall_far_issue_15, "15-overflow_wall_no_point_seen_wall_far");
+raytracing_test!(
+	overflow_wall_both_points_seen_issue_15,
+	"15-overflow_wall_both_points_seen"
+);
+raytracing_test!(
+	overflow_wall_top_point_seen_issue_15,
+	"15-overflow_wall_top_point_seen"
+);
+raytracing_test!(
+	overflow_wall_bottom_point_seen_issue_15,
+	"15-overflow_wall_bottom_point_seen"
+);
+raytracing_test!(
+	overflow_wall_no_point_seen_wall_close_issue_15,
+	"15-overflow_wall_no_point_seen_wall_close"
+);
+raytracing_test!(
+	overflow_wall_no_point_seen_wall_far_issue_15,
+	"15-overflow_wall_no_point_seen_wall_far"
+);

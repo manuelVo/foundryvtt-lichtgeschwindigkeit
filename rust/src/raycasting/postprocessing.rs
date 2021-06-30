@@ -224,25 +224,6 @@ pub fn calculate_fov(
 									gap: true,
 								});
 							}
-							/*fov_points.push(FovPoint {
-								point: entry.point,
-								angle: entry.angle,
-								gap: false,
-							});*/
-							//if origin.distance_to(next_los) >
-							/*if !start_gap_fov {
-								let next_los = los_points.first().unwrap();
-								let line = Line::from_points(los_point.point, next_los.point);
-								let intersections = fov.intersections(&line).unwrap();
-								let entry;
-								// The wall is to the right of the token, so the angles are inverted
-								if intersections.0.angle > intersections.1.angle {
-									entry = intersections.0;
-								} else {
-									entry = intersections.1;
-								}
-
-							}*/
 						}
 					}
 				}
