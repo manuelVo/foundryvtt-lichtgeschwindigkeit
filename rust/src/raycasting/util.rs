@@ -1,4 +1,4 @@
-use crate::geometry::Point;
+use crate::geometry::{Line, Point};
 use crate::raycasting::types::Wall;
 use std::f64::consts::PI;
 
@@ -18,11 +18,15 @@ pub fn is_smaller_relative(angle1: f64, angle2: f64) -> bool {
 }
 
 pub fn is_intersection_on_wall(intersection: Point, wall: &Wall) -> bool {
-	if intersection.is_same_as(&wall.p1) || intersection.is_same_as(&wall.p2) {
+	is_intersection_on_segment(intersection, wall.line, wall.p1, wall.p2)
+}
+
+pub fn is_intersection_on_segment(intersection: Point, line: Line, p1: Point, p2: Point) -> bool {
+	if intersection.is_same_as(&p1) || intersection.is_same_as(&p2) {
 		return false;
 	}
-	if wall.line.is_vertical() || wall.line.m > 1.0 {
-		return between(intersection.y, wall.p1.y, wall.p2.y);
+	if line.is_vertical() || line.m > 1.0 {
+		return between(intersection.y, p1.y, p2.y);
 	}
-	between(intersection.x, wall.p1.x, wall.p2.x)
+	between(intersection.x, p1.x, p2.x)
 }

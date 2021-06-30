@@ -47,7 +47,9 @@ pub fn prepare_data(
 
 		// Check if the wall's line goes through the light sources center.
 		// If so, the wall doesn't have any width and doesn't influence light calculation
-		if e1.borrow().angle == e2.borrow().angle || (e1.borrow().angle - e2.borrow().angle).abs() == PI {
+		if e1.borrow().angle == e2.borrow().angle
+			|| (e1.borrow().angle - e2.borrow().angle).abs() == PI
+		{
 			endpoints.insert(wall.p1, e1);
 			endpoints.insert(wall.p2, e2);
 			continue;

@@ -2,6 +2,8 @@ use crate::geometry::{Circle, Line, Point};
 use crate::raycasting::types::FovPoint;
 use std::f64::consts::PI;
 
+use super::util::is_intersection_on_segment;
+
 pub fn calculate_fov(
 	origin: Point,
 	radius: f64,
@@ -184,22 +186,64 @@ pub fn calculate_fov(
 							}
 						}
 					}
-					if !start_gap_fov && i == los_points.len() - 1 {
+					if i == los_points.len() - 1 && !los_point.gap {
 						let next_los = los_points.first().unwrap();
 						let line = Line::from_points(los_point.point, next_los.point);
-						let intersections = fov.intersections(&line).unwrap();
-						let entry;
-						// The wall is to the right of the token, so the angles are inverted
-						if intersections.0.angle > intersections.1.angle {
-							entry = intersections.0;
-						} else {
-							entry = intersections.1;
+						if let Some(intersections) = fov.intersections(&line) {
+							let entry;
+							let exit;
+							// The wall is to the right of the token, so the angles are inverted
+							if intersections.0.angle > intersections.1.angle {
+								entry = intersections.0;
+								exit = intersections.1;
+							} else {
+								entry = intersections.1;
+								exit = intersections.0;
+							}
+							if is_intersection_on_segment(
+								entry.point,
+								line,
+								los_point.point,
+								next_los.point,
+							) {
+								fov_points.push(FovPoint {
+									point: entry.point,
+									angle: entry.angle,
+									gap: false,
+								});
+							}
+							if is_intersection_on_segment(
+								exit.point,
+								line,
+								los_point.point,
+								next_los.point,
+							) {
+								fov_points.push(FovPoint {
+									point: exit.point,
+									angle: exit.angle,
+									gap: true,
+								});
+							}
+							/*fov_points.push(FovPoint {
+								point: entry.point,
+								angle: entry.angle,
+								gap: false,
+							});*/
+							//if origin.distance_to(next_los) >
+							/*if !start_gap_fov {
+								let next_los = los_points.first().unwrap();
+								let line = Line::from_points(los_point.point, next_los.point);
+								let intersections = fov.intersections(&line).unwrap();
+								let entry;
+								// The wall is to the right of the token, so the angles are inverted
+								if intersections.0.angle > intersections.1.angle {
+									entry = intersections.0;
+								} else {
+									entry = intersections.1;
+								}
+
+							}*/
 						}
-						fov_points.push(FovPoint {
-							point: entry.point,
-							angle: entry.angle,
-							gap: false,
-						});
 					}
 				}
 			}
