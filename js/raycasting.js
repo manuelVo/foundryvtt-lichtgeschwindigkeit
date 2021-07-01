@@ -7,7 +7,7 @@ init().then(() => {
 	Hooks.on("createWall", Lichtgeschwindigkeit.wipeCache);
 	Hooks.on("updateWall", Lichtgeschwindigkeit.wipeCache);
 	Hooks.on("deleteWall", Lichtgeschwindigkeit.wipeCache);
-	window.lichtgeschwindikgeit = {
+	window.lichtgeschwindigkeit = {
 		build_scene,
 		generate_test,
 	}
