@@ -1,6 +1,7 @@
 use crate::geometry::{Circle, Line, Point};
 use crate::raycasting::types::FovPoint;
 use std::f64::consts::PI;
+use std::mem::swap;
 
 use super::util::is_intersection_on_segment;
 
@@ -190,15 +191,20 @@ pub fn calculate_fov(
 						let next_los = los_points.first().unwrap();
 						let line = Line::from_points(los_point.point, next_los.point);
 						if let Some(intersections) = fov.intersections(&line) {
-							let entry;
-							let exit;
-							// The wall is to the right of the token, so the angles are inverted
-							if intersections.0.angle > intersections.1.angle {
+							let mut entry;
+							let mut exit;
+							if intersections.0.angle < intersections.1.angle {
 								entry = intersections.0;
 								exit = intersections.1;
 							} else {
 								entry = intersections.1;
 								exit = intersections.0;
+							}
+							let mut overflow = false;
+							// If "exit" is above the origin this means that the circle is overflowing and "exit" is actually the entry
+							if exit.point.y < origin.y {
+								swap(&mut entry, &mut exit);
+								overflow = true;
 							}
 							if is_intersection_on_segment(
 								entry.point,
@@ -206,11 +212,17 @@ pub fn calculate_fov(
 								los_point.point,
 								next_los.point,
 							) {
-								fov_points.push(FovPoint {
+								let fov_point = FovPoint {
 									point: entry.point,
 									angle: entry.angle,
 									gap: false,
-								});
+								};
+								if overflow {
+									fov_points.push(fov_point);
+								} else {
+									// TODO This isn't optimal from a performance standpoint, but fov_point's shouldn't be huge either, so it might be ok
+									fov_points.insert(0, fov_point);
+								}
 							}
 							if is_intersection_on_segment(
 								exit.point,
