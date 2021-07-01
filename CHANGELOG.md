@@ -1,3 +1,8 @@
+## 1.2.2
+### Bugfixes
+- Fixed a bug that would cause the vision calculation to crash when walls were to the right of the token and touching the range of the fov ([#14](https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit/issues/14), [#15](https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit/issues/15))
+
+
 ## 1.2.1
 ### Bugfixes
 - Vision with restricted angle is now calculated at the correct angle (0° now means down, as in vanilla foundry. Before 0° meant left in Lichtgeschwindigkeit).
