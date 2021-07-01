@@ -46,6 +46,10 @@ raytracing_test!(directional_walls_issue_4, "4-directional_walls");
 raytracing_test!(t_junction_issue_5, "5-t_junction");
 raytracing_test!(zero_length_walls_issue_6, "6-zero_length_walls");
 raytracing_test!(
+	overflow_wall_not_overflowing_in_fov_issue_14,
+	"14-overflow_wall_not_overflowing_in_fov"
+);
+raytracing_test!(
 	overflow_wall_both_points_seen_issue_15,
 	"15-overflow_wall_both_points_seen"
 );
