@@ -5,7 +5,6 @@ export async function build_scene(data) {
 	const now = new Date();
 	const name = `${now.getFullYear()}-${now.getMonth()}-${now.getDay()} ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
 	const folder = await getOrCreateFolder();
-	console.warn(folder);
 	const sceneData = [{
 		name: name,
 		active: false,
