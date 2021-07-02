@@ -1,3 +1,8 @@
+## 1.3.1
+### Bugfixes
+- Fixed a bug that caused an error to be printed to the console in certain situations (initial load, scene switching, editing walls)
+
+
 ## 1.3.0
 ### New features
 - Lichtgeschwindigket now caches the scenes walls in it's wasm memory. This makes the light calculation algorithm about 20% faster than it has been before.
