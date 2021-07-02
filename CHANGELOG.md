@@ -1,3 +1,11 @@
+## 1.3.0
+### New features
+- Lichtgeschwindigket now caches the scenes walls in it's wasm memory. This makes the light calculation algorithm about 20% faster than it has been before.
+
+### Compatibility
+- Lichtgeschwindigkeit is now compatible with the [Wall Height module](https://foundryvtt.com/packages/wall-height). Wall Height version 3.5.3.9 or newer is required for compatibility.
+
+
 ## 1.2.2
 ### Bugfixes
 - Fixed a bug that would cause the vision calculation to crash when walls were to the right of the token and touching the range of the fov ([#14](https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit/issues/14), [#15](https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit/issues/15))
