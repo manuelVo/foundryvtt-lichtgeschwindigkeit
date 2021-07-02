@@ -1,7 +1,7 @@
 use std::fs::read_to_string;
 
 use crate::{
-	raycasting::{compute_polygon, VisionAngle},
+	raycasting::{compute_polygon, Cache, VisionAngle},
 	serialization::{deserialize_ascii85, TestCase},
 };
 
@@ -10,8 +10,9 @@ fn run_test(filename: &str) {
 	let test = deserialize_ascii85::<TestCase>(
 		&read_to_string(test_root_dir + filename + ".ascii85").unwrap(),
 	);
+	let cache = Cache::build(test.call.walls);
 	let (los, fov) = compute_polygon(
-		test.call.walls,
+		&cache,
 		test.call.origin,
 		test.call.radius,
 		test.call.distance,

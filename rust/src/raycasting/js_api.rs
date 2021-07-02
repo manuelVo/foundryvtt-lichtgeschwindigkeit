@@ -1,5 +1,5 @@
 use crate::geometry::Point;
-use crate::raycasting::types::{PolygonType, VisionAngle, WallBase};
+use crate::raycasting::types::{Cache, PolygonType, VisionAngle, WallBase};
 use crate::raycasting::{compute_polygon, DoorState, DoorType, WallDirection, WallSenseType};
 use js_sys::{Array, Object};
 use wasm_bindgen::prelude::*;
@@ -7,8 +7,7 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen(js_name=computePolygon)]
 #[allow(dead_code)]
 pub fn js_compute_polygon(
-	js_walls: Vec<JsValue>,
-	polygon_type: &str,
+	cache: &Cache,
 	origin: JsValue,
 	radius: f64,
 	distance: f64,
@@ -17,14 +16,9 @@ pub fn js_compute_polygon(
 	rotation: f64,
 	internals_transfer: Option<InternalsTransfer>,
 ) -> Object {
-	let polygon_type = PolygonType::from(polygon_type);
-	let mut walls = Vec::with_capacity(js_walls.len());
-	for wall in js_walls {
-		walls.push(WallBase::from_js(&wall.into(), polygon_type));
-	}
 	let origin = Point::from(&origin.into());
 	let (los, fov) = compute_polygon(
-		walls,
+		&cache,
 		origin,
 		radius,
 		distance,
@@ -49,9 +43,20 @@ pub fn js_compute_polygon(
 }
 
 #[allow(dead_code)]
+#[wasm_bindgen(js_name=buildCache)]
+pub fn build_cache(js_walls: Vec<JsValue>, polygon_type: &str) -> Cache {
+	let polygon_type = PolygonType::from(polygon_type);
+	let mut walls = Vec::with_capacity(js_walls.len());
+	for wall in js_walls {
+		walls.push(WallBase::from_js(&wall.into(), polygon_type));
+	}
+	Cache::build(walls)
+}
+
+#[allow(dead_code)]
 #[wasm_bindgen(js_name=wipeCache)]
-pub fn wipe_cache() {
-	crate::raycasting::prepare::wipe_cache();
+pub fn wipe_cache(cache: Cache) {
+	drop(cache);
 }
 
 #[allow(unused)]
