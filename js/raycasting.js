@@ -38,12 +38,12 @@ function wasmComputePolygon(origin, radius, { type = "sight", angle = 360, densi
 	if (unrestricted) {
 		if (!emptyCache)
 			emptyCache = Lichtgeschwindigkeit.buildCache([], type);
-			cacheRef = emptyCache;
+		cacheRef = emptyCache;
 	}
 	else {
 		if (!cache)
 			cache = Lichtgeschwindigkeit.buildCache(canvas.walls.placeables, type);
-			cacheRef = cache
+		cacheRef = cache
 	}
 
 	function logParams(force, error_fn) {
