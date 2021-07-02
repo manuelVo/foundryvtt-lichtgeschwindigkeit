@@ -19,6 +19,7 @@ fn main() {
 		los = Some(compute_polygon(
 			&cache,
 			data.origin,
+			data.height,
 			data.radius,
 			data.distance,
 			data.density,

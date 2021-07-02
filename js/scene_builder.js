@@ -26,6 +26,12 @@ export async function build_scene(data) {
 			ds: wall.ds,
 			sense: wall.sense,
 			dir: wall.dir,
+			flags: {
+				wallHeight: {
+					wallHeightTop: wall.top,
+					wallHeightBottom: wall.bottom,
+				},
+			},
 		};
 	});
 	const tokenData = [{

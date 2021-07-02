@@ -12,7 +12,7 @@ use yazi::{compress, decompress, CompressionLevel, Format};
 
 pub trait Serialize {
 	fn serialize(&self) -> Vec<u8>;
-	fn deserialize(input: &[u8]) -> IResult<&[u8], Self>
+	fn deserialize(input: &[u8], version: u8) -> IResult<&[u8], Self>
 	where
 		Self: Sized;
 }
@@ -34,7 +34,7 @@ impl Serialize for f64 {
 		self.to_be_bytes().into()
 	}
 
-	fn deserialize(input: &[u8]) -> IResult<&[u8], Self> {
+	fn deserialize(input: &[u8], _version: u8) -> IResult<&[u8], Self> {
 		let (input, representation) = take(size_of::<Self>())(input)?;
 		Ok((
 			input,
@@ -51,10 +51,25 @@ impl Serialize for Point {
 		data
 	}
 
-	fn deserialize(input: &[u8]) -> IResult<&[u8], Self> {
-		let (input, x) = f64::deserialize(input)?;
-		let (input, y) = f64::deserialize(input)?;
+	fn deserialize(input: &[u8], version: u8) -> IResult<&[u8], Self> {
+		let (input, x) = f64::deserialize(input, version)?;
+		let (input, y) = f64::deserialize(input, version)?;
 		Ok((input, Self { x, y }))
+	}
+}
+
+impl Serialize for WallHeight {
+	fn serialize(&self) -> Vec<u8> {
+		let mut data = Vec::with_capacity(size_of::<Self>());
+		data.append(&mut self.top.serialize());
+		data.append(&mut self.bottom.serialize());
+		data
+	}
+
+	fn deserialize(input: &[u8], version: u8) -> IResult<&[u8], Self> {
+		let (input, top) = f64::deserialize(input, version)?;
+		let (input, bottom) = f64::deserialize(input, version)?;
+		Ok((input, Self { top, bottom }))
 	}
 }
 
@@ -68,13 +83,13 @@ impl<T: Serialize> Serialize for Vec<T> {
 		data
 	}
 
-	fn deserialize(input: &[u8]) -> IResult<&[u8], Self> {
+	fn deserialize(input: &[u8], version: u8) -> IResult<&[u8], Self> {
 		let (input, len) = take(size_of::<u32>())(input)?;
 		let len = u32::from_be_bytes(len.try_into().unwrap()) as usize;
 		let mut vector = Vec::with_capacity(len);
 		let mut input = input;
 		for _ in 0..len {
-			let (new_input, entry) = T::deserialize(input)?;
+			let (new_input, entry) = T::deserialize(input, version)?;
 			input = new_input;
 			vector.push(entry);
 		}
@@ -127,34 +142,37 @@ impl Serialize for TestCase {
 		data
 	}
 
-	fn deserialize(input: &[u8]) -> IResult<&[u8], Self> {
-		let (input, call) = RaycastingCall::deserialize(input)?;
-		let (input, los) = Vec::deserialize(input)?;
-		let (input, fov) = Vec::deserialize(input)?;
+	fn deserialize(input: &[u8], version: u8) -> IResult<&[u8], Self> {
+		let (input, call) = RaycastingCall::deserialize(input, version)?;
+		let (input, los) = Vec::deserialize(input, version)?;
+		let (input, fov) = Vec::deserialize(input, version)?;
 		Ok((input, Self { call, los, fov }))
 	}
 }
 
 pub fn serialize_ascii85<T: Serialize>(data: T) -> String {
+	let version = 1;
 	let data = data.serialize();
 	let mut compressed = compress(&data, Format::Zlib, CompressionLevel::BestSize).unwrap();
-	compressed.insert(0, 0u8);
+	compressed.insert(0, version);
 	ascii85::encode(&compressed)
 }
 
 pub fn deserialize_ascii85<T: Serialize>(input: &str) -> T {
 	let input = ascii85::decode(input).unwrap();
-	if input[0] != 0 {
+	let version = input[0];
+	if version != 0 {
 		panic!("Data stream has a wrong version number.");
 	}
 	let input = &input[1..];
 	let (input, _) = &decompress(input, Format::Zlib).unwrap();
-	T::deserialize(&input).unwrap().1
+	T::deserialize(&input, version).unwrap().1
 }
 
 pub struct RaycastingCall {
 	pub walls: Vec<WallBase>,
 	pub origin: Point,
+	pub height: f64,
 	pub radius: f64,
 	pub distance: f64,
 	pub density: f64,
@@ -206,6 +224,7 @@ impl Serialize for RaycastingCall {
 		let mut data = Vec::new();
 		data.append(&mut self.walls.serialize());
 		data.append(&mut self.origin.serialize());
+		data.append(&mut self.height.serialize());
 		data.append(&mut self.radius.serialize());
 		data.append(&mut self.distance.serialize());
 		data.append(&mut self.density.serialize());
@@ -214,19 +233,25 @@ impl Serialize for RaycastingCall {
 		data
 	}
 
-	fn deserialize(input: &[u8]) -> IResult<&[u8], Self> {
-		let (input, walls) = Vec::deserialize(input)?;
-		let (input, origin) = Point::deserialize(input)?;
-		let (input, radius) = f64::deserialize(input)?;
-		let (input, distance) = f64::deserialize(input)?;
-		let (input, density) = f64::deserialize(input)?;
-		let (input, angle) = f64::deserialize(input)?;
-		let (input, rotation) = f64::deserialize(input)?;
+	fn deserialize(input: &[u8], version: u8) -> IResult<&[u8], Self> {
+		let (input, walls) = Vec::deserialize(input, version)?;
+		let (input, origin) = Point::deserialize(input, version)?;
+		let (input, height) = if version >= 1 {
+			f64::deserialize(input, version)?
+		} else {
+			(input, 0.0)
+		};
+		let (input, radius) = f64::deserialize(input, version)?;
+		let (input, distance) = f64::deserialize(input, version)?;
+		let (input, density) = f64::deserialize(input, version)?;
+		let (input, angle) = f64::deserialize(input, version)?;
+		let (input, rotation) = f64::deserialize(input, version)?;
 		Ok((
 			input,
 			Self {
 				walls,
 				origin,
+				height,
 				radius,
 				distance,
 				density,
@@ -246,17 +271,23 @@ impl Serialize for WallBase {
 		data.push(self.door.serialize());
 		data.push(self.ds.serialize());
 		data.push(self.dir.serialize());
+		data.append(&mut self.height.serialize());
 		data
 	}
 
-	fn deserialize(input: &[u8]) -> IResult<&[u8], Self> {
-		let (input, p1) = Point::deserialize(input)?;
-		let (input, p2) = Point::deserialize(input)?;
+	fn deserialize(input: &[u8], version: u8) -> IResult<&[u8], Self> {
+		let (input, p1) = Point::deserialize(input, version)?;
+		let (input, p2) = Point::deserialize(input, version)?;
 		let line = Line::from_points(p1, p2);
 		let (input, sense) = WallSenseType::deserialize(input)?;
 		let (input, door) = DoorType::deserialize(input)?;
 		let (input, ds) = DoorState::deserialize(input)?;
 		let (input, dir) = WallDirection::deserialize(input)?;
+		let (input, height) = if version >= 1 {
+			WallHeight::deserialize(input, version)?
+		} else {
+			(input, WallHeight::default())
+		};
 		Ok((
 			input,
 			Self {
@@ -267,6 +298,7 @@ impl Serialize for WallBase {
 				door,
 				ds,
 				dir,
+				height,
 			},
 		))
 	}
@@ -277,6 +309,7 @@ impl Serialize for WallBase {
 pub fn js_serialize_data(
 	cache: &Cache,
 	origin: JsPoint,
+	height: f64,
 	radius: f64,
 	distance: f64,
 	density: f64,
@@ -286,6 +319,7 @@ pub fn js_serialize_data(
 	let data = RaycastingCall {
 		walls: cache.walls.clone(),
 		origin: Point::from(&origin.into()),
+		height,
 		radius,
 		distance,
 		density,
@@ -310,6 +344,7 @@ pub fn js_generate_test(str: &str) -> String {
 	let (los, fov) = compute_polygon(
 		&cache,
 		data.origin,
+		data.height,
 		data.radius,
 		data.distance,
 		data.density,

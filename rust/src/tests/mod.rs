@@ -14,6 +14,7 @@ fn run_test(filename: &str) {
 	let (los, fov) = compute_polygon(
 		&cache,
 		test.call.origin,
+		test.call.height,
 		test.call.radius,
 		test.call.distance,
 		test.call.density,

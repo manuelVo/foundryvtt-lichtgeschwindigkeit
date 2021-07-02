@@ -15,13 +15,14 @@ use crate::raycasting::vision_angle::add_vision_wedge;
 pub fn compute_polygon(
 	cache: &Cache,
 	origin: Point,
+	height: f64,
 	radius: f64,
 	distance: f64,
 	density: f64,
 	vision_angle: Option<VisionAngle>,
 	internals_transfer: Option<InternalsTransfer>,
 ) -> (Vec<Point>, Vec<Point>) {
-	let (endpoints, mut start_walls) = prepare_data(cache, origin, &vision_angle);
+	let (endpoints, mut start_walls) = prepare_data(cache, origin, height, &vision_angle);
 
 	let (mut los_points, start_gap_los, mut start_gap_fov) =
 		calculate_los(origin, radius, &endpoints, &mut start_walls);

@@ -230,6 +230,7 @@ pub struct WallBase {
 	pub door: DoorType,
 	pub ds: DoorState,
 	pub dir: WallDirection,
+	pub height: WallHeight,
 }
 
 impl WallBase {
@@ -240,6 +241,7 @@ impl WallBase {
 		door: DoorType,
 		ds: DoorState,
 		dir: WallDirection,
+		height: WallHeight,
 	) -> Self {
 		let line = Line::from_points(p1, p2);
 		Self {
@@ -250,6 +252,23 @@ impl WallBase {
 			door,
 			ds,
 			dir,
+			height,
+		}
+	}
+}
+
+#[wasm_bindgen]
+#[derive(Debug, Copy, Clone)]
+pub struct WallHeight {
+	pub top: f64,
+	pub bottom: f64,
+}
+
+impl Default for WallHeight {
+	fn default() -> Self {
+		Self {
+			top: f64::INFINITY,
+			bottom: f64::NEG_INFINITY,
 		}
 	}
 }

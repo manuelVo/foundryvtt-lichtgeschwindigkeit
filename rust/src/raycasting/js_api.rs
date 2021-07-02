@@ -1,5 +1,5 @@
 use crate::geometry::Point;
-use crate::raycasting::types::{Cache, PolygonType, VisionAngle, WallBase};
+use crate::raycasting::types::{Cache, PolygonType, VisionAngle, WallBase, WallHeight};
 use crate::raycasting::{compute_polygon, DoorState, DoorType, WallDirection, WallSenseType};
 use js_sys::{Array, Object};
 use wasm_bindgen::prelude::*;
@@ -9,6 +9,7 @@ use wasm_bindgen::prelude::*;
 pub fn js_compute_polygon(
 	cache: &Cache,
 	origin: JsValue,
+	height: f64,
 	radius: f64,
 	distance: f64,
 	density: f64,
@@ -20,6 +21,7 @@ pub fn js_compute_polygon(
 	let (los, fov) = compute_polygon(
 		&cache,
 		origin,
+		height,
 		radius,
 		distance,
 		density,
@@ -77,6 +79,8 @@ extern "C" {
 
 	pub type JsWall;
 	pub type JsWallData;
+	pub type JsWallFlags;
+	pub type JsWallHeight;
 	pub type JsTile;
 
 	#[wasm_bindgen(method, getter)]
@@ -105,6 +109,18 @@ extern "C" {
 
 	#[wasm_bindgen(method, getter)]
 	fn dir(this: &JsWallData) -> Option<WallDirection>;
+
+	#[wasm_bindgen(method, getter)]
+	fn flags(this: &JsWallData) -> JsWallFlags;
+
+	#[wasm_bindgen(method, getter, js_name = "wallHeight")]
+	fn wall_height(this: &JsWallFlags) -> Option<JsWallHeight>;
+
+	#[wasm_bindgen(method, getter, js_name = "wallHeightTop")]
+	fn top(this: &JsWallHeight) -> Option<f64>;
+
+	#[wasm_bindgen(method, getter, js_name = "wallHeightBottom")]
+	fn bottom(this: &JsWallHeight) -> Option<f64>;
 }
 
 impl WallBase {
@@ -128,7 +144,19 @@ impl WallBase {
 			data.door(),
 			data.ds(),
 			data.dir().unwrap_or(WallDirection::BOTH),
+			data.flags().wall_height().into(),
 		)
+	}
+}
+
+impl From<Option<JsWallHeight>> for WallHeight {
+	fn from(height: Option<JsWallHeight>) -> Self {
+		let height = height
+			.map(|height| (height.top(), height.bottom()))
+			.unwrap_or((None, None));
+		let top = height.0.unwrap_or(WallHeight::default().top);
+		let bottom = height.1.unwrap_or(WallHeight::default().bottom);
+		Self { top, bottom }
 	}
 }
 

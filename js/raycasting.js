@@ -28,6 +28,7 @@ function wasmComputePolygon(origin, radius, { type = "sight", angle = 360, densi
 	const dx = Math.max(origin.x, d.width - origin.x);
 	const dy = Math.max(origin.y, d.height - origin.y);
 	const distance = Math.max(radius, Math.hypot(dx, dy));
+	const height = game.currentTokenElevation ?? 0;
 
 	let internals = null;
 	if (debugEnabled)
@@ -46,7 +47,7 @@ function wasmComputePolygon(origin, radius, { type = "sight", angle = 360, densi
 	}
 
 	function logParams(force, error_fn) {
-		rustifyParams(cacheRef, origin, radius, distance, density, angle, rotation, force, error_fn);
+		rustifyParams(cacheRef, origin, height, radius, distance, density, angle, rotation, force, error_fn);
 	}
 
 	if (debugEnabled)
@@ -54,7 +55,7 @@ function wasmComputePolygon(origin, radius, { type = "sight", angle = 360, densi
 
 	let sight;
 	try {
-		sight = Lichtgeschwindigkeit.computePolygon(cacheRef, origin, radius, distance, density, angle, rotation, internals);
+		sight = Lichtgeschwindigkeit.computePolygon(cacheRef, origin, height, radius, distance, density, angle, rotation, internals);
 	}
 	catch (e) {
 		console.error(e);

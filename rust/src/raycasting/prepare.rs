@@ -12,6 +12,7 @@ use std::rc::Rc;
 pub fn prepare_data(
 	cache: &Cache,
 	origin: Point,
+	height: f64,
 	vision_angle: &Option<VisionAngle>,
 ) -> (Vec<Rc<RefCell<Endpoint>>>, PtrIndexedHashSet<Wall>) {
 	let wall_bases = &cache.walls;
@@ -35,6 +36,10 @@ pub fn prepare_data(
 			continue;
 		}
 		if wall.sense == WallSenseType::NONE {
+			continue;
+		}
+
+		if wall.height.bottom > height || wall.height.top < height {
 			continue;
 		}
 
