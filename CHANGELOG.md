@@ -1,3 +1,12 @@
+## 1.3.2
+### Bugfixes
+- Fixed a bug that would cause invisible walls to block light if they were set to block sound [#16](https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit/issues/16)
+- Fixed a bug that caused walls below roofs to have the wrong visibility [#16](https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit/issues/16)
+
+### Performance
+The bugs listed above were caused by the cache that was introduced in Lichtgeschwindigkeit 1.3.0. Unfortunately fixing the cache isn't simple, so it's being disabled for now to get rid of those bugs. This drops Lichtgeschwindigkeits speed back to the speed it had in Version 1.2.2.
+
+
 ## 1.3.1
 ### Bugfixes
 - Fixed a bug that caused an error to be printed to the console in certain situations (initial load, scene switching, editing walls)
