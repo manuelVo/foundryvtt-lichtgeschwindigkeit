@@ -34,6 +34,8 @@ export async function build_scene(data) {
 			},
 		};
 	});
+	console.warn(data);
+	window.lsdata = data;
 	const tokenData = [{
 		actorId: "",
 		name: "Mr. Bug",
@@ -50,6 +52,7 @@ export async function build_scene(data) {
 		rotation: data.rotation,
 		x: data.origin.x - 50,
 		y: data.origin.y - 50,
+		elevation: data.height,
 	}];
 	let scene = await Scene.create(sceneData, { renderSheet: false });
 	if (["0.7.9", "0.7.10"].includes(game.data.version)) {

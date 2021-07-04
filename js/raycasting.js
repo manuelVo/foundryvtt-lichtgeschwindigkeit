@@ -78,14 +78,14 @@ function wasmComputePolygon(origin, radius, { type = "sight", angle = 360, densi
 	return { rays: null, los, fov };
 }
 
-function rustifyParams(cache, origin, radius, distance, density, angle, rotation, force = false, error_fn = console.warn) {
+function rustifyParams(cache, origin, height, radius, distance, density, angle, rotation, force = false, error_fn = console.warn) {
 	/*if (!force) {
 		if (canvas.tokens.controlled.length === 0)
 			return;
 		if (Math.abs(origin.x - canvas.tokens.controlled[0].data.x) > 50 || Math.abs(origin.y - canvas.tokens.controlled[0].data.y) > 50)
 			return;
 	}*/
-	error_fn(Lichtgeschwindigkeit.serializeData(cache, origin, radius, distance, density, angle, rotation));
+	error_fn(Lichtgeschwindigkeit.serializeData(cache, origin, height, radius, distance, density, angle, rotation));
 }
 
 function _visualizeSight(endpoints, origin, radius, distance, los, fov, tangentPoints, clear = true) {

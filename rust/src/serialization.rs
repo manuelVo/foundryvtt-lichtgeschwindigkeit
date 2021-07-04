@@ -151,7 +151,7 @@ impl Serialize for TestCase {
 }
 
 pub fn serialize_ascii85<T: Serialize>(data: T) -> String {
-	let version = 1;
+	let version = 2;
 	let data = data.serialize();
 	let mut compressed = compress(&data, Format::Zlib, CompressionLevel::BestSize).unwrap();
 	compressed.insert(0, version);
@@ -161,7 +161,7 @@ pub fn serialize_ascii85<T: Serialize>(data: T) -> String {
 pub fn deserialize_ascii85<T: Serialize>(input: &str) -> T {
 	let input = ascii85::decode(input).unwrap();
 	let version = input[0];
-	if version > 1 {
+	if version > 2 {
 		panic!("Data stream has a wrong version number.");
 	}
 	let input = &input[1..];
@@ -195,6 +195,7 @@ impl From<RaycastingCall> for Object {
 		)
 		.unwrap();
 		set(&result, &JsValue::from_str("origin"), &value.origin.into()).unwrap();
+		set(&result, &JsValue::from_str("height"), &value.height.into()).unwrap();
 		set(&result, &JsValue::from_str("radius"), &value.radius.into()).unwrap();
 		set(
 			&result,
@@ -236,7 +237,7 @@ impl Serialize for RaycastingCall {
 	fn deserialize(input: &[u8], version: u8) -> IResult<&[u8], Self> {
 		let (input, walls) = Vec::deserialize(input, version)?;
 		let (input, origin) = Point::deserialize(input, version)?;
-		let (input, height) = if version >= 1 {
+		let (input, height) = if version >= 2 {
 			f64::deserialize(input, version)?
 		} else {
 			(input, 0.0)
