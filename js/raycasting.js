@@ -3,23 +3,15 @@ import init, * as Lichtgeschwindigkeit from "../wasm/lichtgeschwindigkeit.js";
 init().then(() => {
 	SightLayer.computeSight = wasmComputePolygon;
 	WallsLayer.prototype.computePolygon = wasmComputePolygon;
-	Hooks.on("canvasInit", wipeCache);
-	Hooks.on("createWall", wipeCache);
-	Hooks.on("updateWall", wipeCache);
-	Hooks.on("deleteWall", wipeCache);
+	Hooks.on("canvasInit", Lichtgeschwindigkeit.wipeCache);
+	Hooks.on("createWall", Lichtgeschwindigkeit.wipeCache);
+	Hooks.on("updateWall", Lichtgeschwindigkeit.wipeCache);
+	Hooks.on("deleteWall", Lichtgeschwindigkeit.wipeCache);
 	window.lichtgeschwindigkeit = {
 		build_scene,
 		generate_test,
 	}
 });
-
-let cache = undefined;
-let emptyCache = undefined;
-
-function wipeCache() {
-	Lichtgeschwindigkeit.wipeCache(cache);
-	cache = undefined;
-}
 
 function wasmComputePolygon(origin, radius, { type = "sight", angle = 360, density = 6, rotation = 0, unrestricted = false } = {}) {
 	let debugEnabled = CONFIG.debug.sightRays;
@@ -34,20 +26,16 @@ function wasmComputePolygon(origin, radius, { type = "sight", angle = 360, densi
 	if (debugEnabled)
 		internals = {};
 
-	let cacheRef;
+	let walls;
 	if (unrestricted) {
-		if (!emptyCache)
-			emptyCache = Lichtgeschwindigkeit.buildCache([], type);
-		cacheRef = emptyCache;
+		walls = [];
 	}
 	else {
-		if (!cache)
-			cache = Lichtgeschwindigkeit.buildCache(canvas.walls.placeables, type);
-		cacheRef = cache
+		walls = canvas.walls.placeables;
 	}
 
 	function logParams(force, error_fn) {
-		rustifyParams(cacheRef, origin, height, radius, distance, density, angle, rotation, force, error_fn);
+		rustifyParams(walls, type, origin, height, radius, distance, density, angle, rotation, force, error_fn);
 	}
 
 	if (debugEnabled)
@@ -55,7 +43,7 @@ function wasmComputePolygon(origin, radius, { type = "sight", angle = 360, densi
 
 	let sight;
 	try {
-		sight = Lichtgeschwindigkeit.computePolygon(cacheRef, origin, height, radius, distance, density, angle, rotation, internals);
+		sight = Lichtgeschwindigkeit.computePolygon(walls, type, origin, height, radius, distance, density, angle, rotation, internals);
 	}
 	catch (e) {
 		console.error(e);
@@ -77,14 +65,14 @@ function wasmComputePolygon(origin, radius, { type = "sight", angle = 360, densi
 	return { rays: null, los, fov };
 }
 
-function rustifyParams(cache, origin, height, radius, distance, density, angle, rotation, force = false, error_fn = console.warn) {
+function rustifyParams(walls, type, origin, height, radius, distance, density, angle, rotation, force = false, error_fn = console.warn) {
 	/*if (!force) {
 		if (canvas.tokens.controlled.length === 0)
 			return;
 		if (Math.abs(origin.x - canvas.tokens.controlled[0].data.x) > 50 || Math.abs(origin.y - canvas.tokens.controlled[0].data.y) > 50)
 			return;
 	}*/
-	error_fn(Lichtgeschwindigkeit.serializeData(cache, origin, height, radius, distance, density, angle, rotation));
+	error_fn(Lichtgeschwindigkeit.serializeData(walls, type, origin, height, radius, distance, density, angle, rotation));
 }
 
 function _visualizeSight(endpoints, origin, radius, distance, los, fov, tangentPoints, clear = true) {

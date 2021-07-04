@@ -1,5 +1,9 @@
 use crate::geometry::Point;
-use crate::raycasting::types::{PolygonType, VisionAngle, WallBase, WallHeight};
+<<<<<<< HEAD
+use crate::raycasting::types::{Cache, PolygonType, VisionAngle, WallBase, WallHeight};
+=======
+use crate::raycasting::types::{PolygonType, VisionAngle, WallBase};
+>>>>>>> parent of 1ddb536 (Only transmit the walls once and then keep them cached to reduce js->wasm overhead)
 use crate::raycasting::{compute_polygon, DoorState, DoorType, WallDirection, WallSenseType};
 use js_sys::{Array, Object};
 use wasm_bindgen::prelude::*;

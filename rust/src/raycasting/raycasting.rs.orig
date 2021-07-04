@@ -22,7 +22,11 @@ pub fn compute_polygon(
 	vision_angle: Option<VisionAngle>,
 	internals_transfer: Option<InternalsTransfer>,
 ) -> (Vec<Point>, Vec<Point>) {
-	let (endpoints, mut start_walls) = prepare_data(wall_bases, origin, height, &vision_angle);
+<<<<<<< HEAD
+	let (endpoints, mut start_walls) = prepare_data(cache, origin, height, &vision_angle);
+=======
+	let (endpoints, mut start_walls) = prepare_data(wall_bases, origin, &vision_angle);
+>>>>>>> parent of 1ddb536 (Only transmit the walls once and then keep them cached to reduce js->wasm overhead)
 
 	let (mut los_points, start_gap_los, mut start_gap_fov) =
 		calculate_los(origin, radius, &endpoints, &mut start_walls);

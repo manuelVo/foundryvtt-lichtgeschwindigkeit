@@ -1,0 +1,17 @@
+mod js_api;
+mod postprocessing;
+mod prepare;
+mod raycasting;
+mod types;
+mod util;
+mod vision_angle;
+
+pub use raycasting::compute_polygon;
+pub use types::{
+<<<<<<< HEAD
+	Cache, DoorState, DoorType, PolygonType, VisionAngle, WallBase, WallDirection, WallHeight,
+	WallSenseType,
+=======
+	DoorState, DoorType, PolygonType, VisionAngle, WallBase, WallDirection, WallSenseType,
+>>>>>>> parent of 1ddb536 (Only transmit the walls once and then keep them cached to reduce js->wasm overhead)
+};
