@@ -161,7 +161,7 @@ pub fn serialize_ascii85<T: Serialize>(data: T) -> String {
 pub fn deserialize_ascii85<T: Serialize>(input: &str) -> T {
 	let input = ascii85::decode(input).unwrap();
 	let version = input[0];
-	if version != 0 {
+	if version > 1 {
 		panic!("Data stream has a wrong version number.");
 	}
 	let input = &input[1..];
