@@ -17,8 +17,7 @@ let cache = undefined;
 let emptyCache = undefined;
 
 function wipeCache() {
-	if (cache)
-		Lichtgeschwindigkeit.wipeCache(cache);
+	Lichtgeschwindigkeit.wipeCache(cache);
 	cache = undefined;
 }
 
