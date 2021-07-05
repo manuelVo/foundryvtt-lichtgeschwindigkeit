@@ -161,21 +161,22 @@ fn calculate_los(
 
 		if old_los_wall != closest_los_wall {
 			if let Some(old_closest_wall) = old_los_wall {
-				let intersection = current_ray_line
-					.intersection(&old_closest_wall.wall.line)
-					.unwrap();
-				if closest_los_wall.is_none()
-					|| !closest_los_wall
-						.as_ref()
-						.unwrap()
-						.intersection
-						.is_same_as(&intersection)
+				if let Some(intersection) =
+					current_ray_line.intersection(&old_closest_wall.wall.line)
 				{
-					los_points.push(FovPoint {
-						point: intersection,
-						angle: endpoint.angle,
-						gap: false,
-					});
+					if closest_los_wall.is_none()
+						|| !closest_los_wall
+							.as_ref()
+							.unwrap()
+							.intersection
+							.is_same_as(&intersection)
+					{
+						los_points.push(FovPoint {
+							point: intersection,
+							angle: endpoint.angle,
+							gap: false,
+						});
+					}
 				}
 			}
 
