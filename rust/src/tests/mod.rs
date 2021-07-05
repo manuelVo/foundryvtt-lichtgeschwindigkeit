@@ -70,3 +70,7 @@ raytracing_test!(
 	overflow_wall_no_point_seen_wall_far_issue_15,
 	"15-overflow_wall_no_point_seen_wall_far"
 );
+raytracing_test!(
+	old_closest_wall_pralell_to_ray_line_issue_17,
+	"17-old_closest_wall_paralell_to_ray_line"
+);
