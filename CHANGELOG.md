@@ -1,3 +1,8 @@
+## 1.3.3
+### Bugfixes
+- Fixed a bug that could cause the vision calculation to crash when walls were paralell to a sight ray [#17](https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit/issues/17)
+
+
 ## 1.3.2
 ### Bugfixes
 - Fixed a bug that would cause invisible walls to block light if they were set to block sound [#16](https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit/issues/16)
