@@ -74,3 +74,7 @@ raytracing_test!(
 	old_closest_wall_pralell_to_ray_line_issue_17,
 	"17-old_closest_wall_paralell_to_ray_line"
 );
+raytracing_test!(
+	origin_on_wall_endpoint_issue_19,
+	"19-origin_on_wall_endpoint"
+);
