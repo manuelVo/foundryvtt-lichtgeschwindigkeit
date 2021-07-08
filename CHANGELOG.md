@@ -1,3 +1,8 @@
+## 1.3.4
+### Bugfixes
+- Fixed a bug that could cause the vision calculation to crash when a token or light was placed exactly on the endpoint of a wall [#19](https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit/issues/19)
+
+
 ## 1.3.3
 ### Bugfixes
 - Fixed a bug that could cause the vision calculation to crash when walls were paralell to a sight ray [#17](https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit/issues/17)

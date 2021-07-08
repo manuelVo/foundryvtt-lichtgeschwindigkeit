@@ -96,7 +96,7 @@ dependencies = [
 
 [[package]]
 name = "lichtgeschwindigkeit"
-version = "1.3.3"
+version = "1.3.4"
 dependencies = [
  "ascii85",
  "console_error_panic_hook",
