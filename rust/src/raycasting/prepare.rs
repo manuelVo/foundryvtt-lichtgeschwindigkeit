@@ -26,6 +26,9 @@ pub fn prepare_data(
 		if wall.p1 == wall.p2 {
 			continue;
 		}
+		if wall.p1 == origin || wall.p2 == origin {
+			continue;
+		}
 		if (wall.line.is_vertical() && wall.p1.x == origin.x)
 			|| (wall.line.is_horizontal() && wall.line.p1.y == origin.y)
 		{
