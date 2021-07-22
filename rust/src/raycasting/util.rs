@@ -1,6 +1,8 @@
 use crate::geometry::{Line, Point};
 use crate::raycasting::types::Wall;
+use crate::raycasting::WallBase;
 use std::f64::consts::PI;
+use std::rc::Rc;
 
 pub fn between<T: Copy + PartialOrd>(num: T, a: T, b: T) -> bool {
 	let (min, max) = if a < b { (a, b) } else { (b, a) };
@@ -17,8 +19,57 @@ pub fn is_smaller_relative(angle1: f64, angle2: f64) -> bool {
 	return angle_distance > 0.0;
 }
 
-pub fn is_intersection_on_wall(intersection: Point, wall: &Wall) -> bool {
-	is_intersection_on_segment(intersection, wall.line, wall.p1, wall.p2)
+// TODO Use a segment class instead of this weird trait
+pub trait LineSegment {
+	fn line(&self) -> Line;
+	fn p1(&self) -> Point;
+	fn p2(&self) -> Point;
+}
+
+impl LineSegment for Wall {
+	fn line(&self) -> Line {
+		self.line
+	}
+
+	fn p1(&self) -> Point {
+		self.p1
+	}
+
+	fn p2(&self) -> Point {
+		self.p2
+	}
+}
+
+impl LineSegment for WallBase {
+	fn line(&self) -> Line {
+		self.line
+	}
+
+	fn p1(&self) -> Point {
+		self.p1
+	}
+
+	fn p2(&self) -> Point {
+		self.p2
+	}
+}
+
+impl<T: LineSegment> LineSegment for Rc<T> {
+	fn line(&self) -> Line {
+		self.as_ref().line()
+	}
+
+	fn p1(&self) -> Point {
+		self.as_ref().p1()
+	}
+
+	fn p2(&self) -> Point {
+		self.as_ref().p2()
+	}
+}
+
+pub fn is_intersection_on_wall<S: LineSegment>(intersection: Point, wall: &S) -> bool {
+	is_intersection_on_segment(intersection, wall.line(), wall.p1(), wall.p2())
 }
 
 pub fn is_intersection_on_segment(intersection: Point, line: Line, p1: Point, p2: Point) -> bool {

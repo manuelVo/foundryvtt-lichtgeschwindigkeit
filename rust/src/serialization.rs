@@ -308,8 +308,7 @@ impl Serialize for WallBase {
 #[wasm_bindgen(js_name=serializeData)]
 #[allow(dead_code)]
 pub fn js_serialize_data(
-	walls: Vec<JsValue>,
-	polygon_type: &str,
+	cache: &Cache,
 	origin: JsPoint,
 	height: f64,
 	radius: f64,
@@ -318,12 +317,8 @@ pub fn js_serialize_data(
 	angle: f64,
 	rotation: f64,
 ) -> String {
-	let polygon_type = PolygonType::from(polygon_type);
 	let data = RaycastingCall {
-		walls: walls
-			.into_iter()
-			.map(|wall| WallBase::from_js(&wall.into(), polygon_type))
-			.collect(),
+		walls: cache.walls.clone(),
 		origin: Point::from(&origin.into()),
 		height,
 		radius,
@@ -346,8 +341,9 @@ pub fn js_deserialize_data(str: &str) -> Object {
 #[allow(dead_code)]
 pub fn js_generate_test(str: &str) -> String {
 	let data = deserialize_ascii85::<RaycastingCall>(str);
+	let cache = Cache::build(data.walls.clone());
 	let (los, fov) = compute_polygon(
-		data.walls.clone(),
+		&cache,
 		data.origin,
 		data.height,
 		data.radius,

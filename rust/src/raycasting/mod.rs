@@ -8,6 +8,6 @@ mod vision_angle;
 
 pub use raycasting::compute_polygon;
 pub use types::{
-	DoorState, DoorType, PolygonType, VisionAngle, WallBase, WallDirection, WallHeight,
+	Cache, DoorState, DoorType, PolygonType, VisionAngle, WallBase, WallDirection, WallHeight,
 	WallSenseType,
 };

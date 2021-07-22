@@ -13,7 +13,7 @@ use crate::raycasting::util::{is_intersection_on_wall, is_smaller_relative};
 use crate::raycasting::vision_angle::add_vision_wedge;
 
 pub fn compute_polygon(
-	wall_bases: Vec<WallBase>,
+	cache: &Cache,
 	origin: Point,
 	height: f64,
 	radius: f64,
@@ -22,7 +22,7 @@ pub fn compute_polygon(
 	vision_angle: Option<VisionAngle>,
 	internals_transfer: Option<InternalsTransfer>,
 ) -> (Vec<Point>, Vec<Point>) {
-	let (endpoints, mut start_walls) = prepare_data(wall_bases, origin, height, &vision_angle);
+	let (endpoints, mut start_walls) = prepare_data(cache, origin, height, &vision_angle);
 
 	let (mut los_points, start_gap_los, mut start_gap_fov) =
 		calculate_los(origin, radius, &endpoints, &mut start_walls);

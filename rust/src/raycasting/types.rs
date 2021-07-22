@@ -1,7 +1,7 @@
 use wasm_bindgen::prelude::*;
 
 use crate::geometry::{Line, Point};
-use crate::raycasting::util::is_smaller_relative;
+use crate::raycasting::util::{is_intersection_on_wall, is_smaller_relative};
 use std::cell::RefCell;
 use std::convert::TryFrom;
 use std::f64::consts::PI;
@@ -352,5 +352,49 @@ impl WallWithAngles {
 			see_through_angle: self.see_through_angle,
 			end,
 		}
+	}
+}
+
+// TODO Locate this into a different module
+#[wasm_bindgen]
+pub struct Cache {
+	#[wasm_bindgen(skip)]
+	pub walls: Vec<WallBase>,
+	#[wasm_bindgen(skip)]
+	pub intersections: Vec<Point>,
+}
+
+impl Cache {
+	pub fn build(walls: Vec<WallBase>) -> Self {
+		let intersections = Self::calc_intersections(&walls);
+		Self {
+			walls,
+			intersections,
+		}
+	}
+
+	fn calc_intersections(walls: &Vec<WallBase>) -> Vec<Point> {
+		let mut intersections = Vec::new();
+		if walls.len() >= 2 {
+			for i in 0..walls.len() - 1 {
+				for j in 0..walls.len() - i - 1 {
+					let (i_walls, j_walls) = walls.split_at(i + 1);
+					let wall1 = &i_walls[i];
+					let wall2 = &j_walls[j];
+					let intersection = wall1.line.intersection(&wall2.line);
+					match intersection {
+						Some(intersection) => {
+							if is_intersection_on_wall(intersection, wall1)
+								&& is_intersection_on_wall(intersection, wall2)
+							{
+								intersections.push(intersection);
+							}
+						}
+						None => {}
+					};
+				}
+			}
+		}
+		intersections
 	}
 }
