@@ -151,7 +151,7 @@ impl Serialize for TestCase {
 }
 
 pub fn serialize_ascii85<T: Serialize>(data: T) -> String {
-	let version = 2;
+	let version = 3;
 	let data = data.serialize();
 	let mut compressed = compress(&data, Format::Zlib, CompressionLevel::BestSize).unwrap();
 	compressed.insert(0, version);
@@ -178,6 +178,7 @@ pub struct RaycastingCall {
 	pub density: f64,
 	pub angle: f64,
 	pub rotation: f64,
+	pub polygon_type: PolygonType,
 }
 
 impl From<RaycastingCall> for Object {
@@ -231,6 +232,7 @@ impl Serialize for RaycastingCall {
 		data.append(&mut self.density.serialize());
 		data.append(&mut self.angle.serialize());
 		data.append(&mut self.rotation.serialize());
+		data.push(self.polygon_type.serialize());
 		data
 	}
 
@@ -247,6 +249,11 @@ impl Serialize for RaycastingCall {
 		let (input, density) = f64::deserialize(input, version)?;
 		let (input, angle) = f64::deserialize(input, version)?;
 		let (input, rotation) = f64::deserialize(input, version)?;
+		let (input, polygon_type) = if version >= 3 {
+			PolygonType::deserialize(input)?
+		} else {
+			(input, PolygonType::SIGHT)
+		};
 		Ok((
 			input,
 			Self {
@@ -258,6 +265,7 @@ impl Serialize for RaycastingCall {
 				density,
 				angle,
 				rotation,
+				polygon_type,
 			},
 		))
 	}
@@ -269,6 +277,7 @@ impl Serialize for WallBase {
 		data.append(&mut self.p1.serialize());
 		data.append(&mut self.p2.serialize());
 		data.push(self.sense.serialize());
+		data.push(self.sound.serialize());
 		data.push(self.door.serialize());
 		data.push(self.ds.serialize());
 		data.push(self.dir.serialize());
@@ -281,6 +290,11 @@ impl Serialize for WallBase {
 		let (input, p2) = Point::deserialize(input, version)?;
 		let line = Line::from_points(p1, p2);
 		let (input, sense) = WallSenseType::deserialize(input)?;
+		let (input, sound) = if version >= 3 {
+			WallSenseType::deserialize(input)?
+		} else {
+			(input, sense)
+		};
 		let (input, door) = DoorType::deserialize(input)?;
 		let (input, ds) = DoorState::deserialize(input)?;
 		let (input, dir) = WallDirection::deserialize(input)?;
@@ -296,6 +310,7 @@ impl Serialize for WallBase {
 				p2,
 				line,
 				sense,
+				sound,
 				door,
 				ds,
 				dir,
@@ -316,7 +331,9 @@ pub fn js_serialize_data(
 	density: f64,
 	angle: f64,
 	rotation: f64,
+	polygon_type: &str,
 ) -> String {
+	let polygon_type = PolygonType::from(polygon_type);
 	let data = RaycastingCall {
 		walls: cache.walls.clone(),
 		origin: Point::from(&origin.into()),
@@ -326,6 +343,7 @@ pub fn js_serialize_data(
 		density,
 		angle,
 		rotation,
+		polygon_type,
 	};
 	serialize_ascii85(data)
 }
@@ -350,6 +368,7 @@ pub fn js_generate_test(str: &str) -> String {
 		data.distance,
 		data.density,
 		VisionAngle::from_rotation_and_angle(data.rotation, data.angle, data.origin),
+		data.polygon_type,
 		None,
 	);
 	serialize_ascii85(TestCase {

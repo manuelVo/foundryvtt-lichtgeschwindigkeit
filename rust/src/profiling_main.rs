@@ -24,6 +24,7 @@ fn main() {
 			data.distance,
 			data.density,
 			VisionAngle::from_rotation_and_angle(data.rotation, data.angle, data.origin),
+			PolygonType::SIGHT,
 			None,
 		));
 		sum += los.as_ref().unwrap().0.len();

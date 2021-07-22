@@ -15,9 +15,11 @@ pub fn js_compute_polygon(
 	density: f64,
 	angle: f64,
 	rotation: f64,
+	polygon_type: &str,
 	internals_transfer: Option<InternalsTransfer>,
 ) -> Object {
 	let origin = Point::from(&origin.into());
+	let polygon_type = PolygonType::from(polygon_type);
 	let (los, fov) = compute_polygon(
 		&cache,
 		origin,
@@ -26,6 +28,7 @@ pub fn js_compute_polygon(
 		distance,
 		density,
 		VisionAngle::from_rotation_and_angle(rotation, angle, origin),
+		polygon_type,
 		internals_transfer,
 	);
 	let result = Object::new();
@@ -46,11 +49,10 @@ pub fn js_compute_polygon(
 
 #[allow(dead_code)]
 #[wasm_bindgen(js_name=buildCache)]
-pub fn build_cache(js_walls: Vec<JsValue>, polygon_type: &str) -> Cache {
-	let polygon_type = PolygonType::from(polygon_type);
+pub fn build_cache(js_walls: Vec<JsValue>) -> Cache {
 	let mut walls = Vec::with_capacity(js_walls.len());
 	for wall in js_walls {
-		walls.push(WallBase::from_js(&wall.into(), polygon_type));
+		walls.push(WallBase::from_js(&wall.into()));
 	}
 	Cache::build(walls)
 }
@@ -124,23 +126,19 @@ extern "C" {
 }
 
 impl WallBase {
-	pub fn from_js(wall: &JsWall, polygon_type: PolygonType) -> Self {
+	pub fn from_js(wall: &JsWall) -> Self {
 		let data = wall.data();
 		let c = data.c();
-		let mut sense = match polygon_type {
-			PolygonType::SIGHT => data.sense(),
-			PolygonType::SOUND => data.sound(),
-		};
-		if polygon_type == PolygonType::SIGHT {
-			let is_interior = !wall.roof().map(|roof| roof.occluded()).unwrap_or(true);
-			if is_interior {
-				sense = WallSenseType::NORMAL;
-			}
+		let mut sense = data.sense();
+		let is_interior = !wall.roof().map(|roof| roof.occluded()).unwrap_or(true);
+		if is_interior {
+			sense = WallSenseType::NORMAL;
 		}
 		Self::new(
 			Point::new(c[0].round(), c[1].round()),
 			Point::new(c[2].round(), c[3].round()),
 			sense,
+			data.sound(),
 			data.door(),
 			data.ds(),
 			data.dir().unwrap_or(WallDirection::BOTH),

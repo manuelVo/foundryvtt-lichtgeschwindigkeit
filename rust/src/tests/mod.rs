@@ -19,6 +19,7 @@ fn run_test(filename: &str) {
 		test.call.distance,
 		test.call.density,
 		VisionAngle::from_rotation_and_angle(test.call.rotation, test.call.angle, test.call.origin),
+		test.call.polygon_type,
 		None,
 	);
 	let e = 0.1;

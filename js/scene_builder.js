@@ -25,6 +25,7 @@ export async function build_scene(data) {
 			door: wall.door,
 			ds: wall.ds,
 			sense: wall.sense,
+			sound: wall.sound,
 			dir: wall.dir,
 			flags: {
 				wallHeight: {

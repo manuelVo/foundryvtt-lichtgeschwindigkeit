@@ -122,6 +122,18 @@ pub enum PolygonType {
 	SOUND = 1,
 }
 
+impl TryFrom<usize> for PolygonType {
+	type Error = ();
+
+	fn try_from(value: usize) -> Result<Self, Self::Error> {
+		match value {
+			x if x == Self::SIGHT as usize => Ok(Self::SIGHT),
+			x if x == Self::SOUND as usize => Ok(Self::SOUND),
+			_ => Err(()),
+		}
+	}
+}
+
 pub struct VisionAngle {
 	pub start: f64,
 	pub end: f64,
@@ -173,7 +185,11 @@ pub struct Wall {
 }
 
 impl Wall {
-	pub fn from_base(base: WallBase, end: Rc<RefCell<Endpoint>>) -> Self {
+	pub fn from_base(
+		base: WallBase,
+		end: Rc<RefCell<Endpoint>>,
+		polygon_type: PolygonType,
+	) -> Self {
 		let see_through_angle;
 		if base.dir == WallDirection::BOTH {
 			see_through_angle = None;
@@ -189,11 +205,12 @@ impl Wall {
 			}
 			see_through_angle = Some(angle);
 		}
+		let sense = base.current_sense(polygon_type);
 		Self {
 			p1: base.p1,
 			p2: base.p2,
 			line: base.line,
-			sense: base.sense,
+			sense,
 			see_through_angle,
 			end,
 		}
@@ -227,6 +244,7 @@ pub struct WallBase {
 	#[wasm_bindgen(skip)]
 	pub line: Line,
 	pub sense: WallSenseType,
+	pub sound: WallSenseType,
 	pub door: DoorType,
 	pub ds: DoorState,
 	pub dir: WallDirection,
@@ -238,6 +256,7 @@ impl WallBase {
 		p1: Point,
 		p2: Point,
 		sense: WallSenseType,
+		sound: WallSenseType,
 		door: DoorType,
 		ds: DoorState,
 		dir: WallDirection,
@@ -249,10 +268,18 @@ impl WallBase {
 			p2,
 			line,
 			sense,
+			sound,
 			door,
 			ds,
 			dir,
 			height,
+		}
+	}
+
+	pub fn current_sense(&self, polygon_type: PolygonType) -> WallSenseType {
+		match polygon_type {
+			PolygonType::SIGHT => self.sense,
+			PolygonType::SOUND => self.sound,
 		}
 	}
 }
