@@ -21,13 +21,28 @@ trait SerializeByte {
 	fn serialize(&self) -> u8;
 	fn deserialize(input: &[u8]) -> IResult<&[u8], Self>
 	where
-		Self: Sized + TryFrom<usize>,
-		<Self as TryFrom<usize>>::Error: Debug,
-	{
-		let (input, byte) = take(1usize)(input)?;
-		Ok((input, (byte[0] as usize).try_into().unwrap()))
-	}
+		Self: Sized;
 }
+
+macro_rules! ImplSerializeByteForEnum (
+	($name:ident) => {
+		impl SerializeByte for $name {
+			fn serialize(&self) -> u8 {
+				// TODO Try into would be better here
+				*self as u8
+			}
+
+			fn deserialize(input: &[u8]) -> IResult<&[u8], Self>
+			where
+				Self: Sized + TryFrom<usize>,
+				<Self as TryFrom<usize>>::Error: Debug,
+			{
+				let (input, byte) = take(1usize)(input)?;
+				Ok((input, (byte[0] as usize).try_into().unwrap()))
+			}
+		}
+	};
+);
 
 impl Serialize for f64 {
 	fn serialize(&self) -> Vec<u8> {
@@ -97,35 +112,11 @@ impl<T: Serialize> Serialize for Vec<T> {
 	}
 }
 
-impl SerializeByte for WallSenseType {
-	fn serialize(&self) -> u8 {
-		return *self as u8;
-	}
-}
-
-impl SerializeByte for DoorType {
-	fn serialize(&self) -> u8 {
-		return *self as u8;
-	}
-}
-
-impl SerializeByte for DoorState {
-	fn serialize(&self) -> u8 {
-		return *self as u8;
-	}
-}
-
-impl SerializeByte for WallDirection {
-	fn serialize(&self) -> u8 {
-		return *self as u8;
-	}
-}
-
-impl SerializeByte for PolygonType {
-	fn serialize(&self) -> u8 {
-		*self as u8
-	}
-}
+ImplSerializeByteForEnum!(WallSenseType);
+ImplSerializeByteForEnum!(DoorType);
+ImplSerializeByteForEnum!(DoorState);
+ImplSerializeByteForEnum!(WallDirection);
+ImplSerializeByteForEnum!(PolygonType);
 
 pub struct TestCase {
 	pub call: RaycastingCall,
