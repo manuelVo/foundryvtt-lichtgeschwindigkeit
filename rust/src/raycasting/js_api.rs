@@ -189,7 +189,7 @@ impl From<&str> for PolygonType {
 	fn from(value: &str) -> Self {
 		match value {
 			"sight" => Self::SIGHT,
-			"light" => Self::SIGHT,
+			"light" => Self::LIGHT,
 			"sound" => Self::SOUND,
 			_ => {
 				log!(

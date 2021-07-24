@@ -121,6 +121,7 @@ pub struct FovPoint {
 pub enum PolygonType {
 	SIGHT = 0,
 	SOUND = 1,
+	LIGHT = 2,
 }
 
 impl TryFrom<usize> for PolygonType {
@@ -130,6 +131,7 @@ impl TryFrom<usize> for PolygonType {
 		match value {
 			x if x == Self::SIGHT as usize => Ok(Self::SIGHT),
 			x if x == Self::SOUND as usize => Ok(Self::SOUND),
+			x if x == Self::LIGHT as usize => Ok(Self::LIGHT),
 			_ => Err(()),
 		}
 	}
@@ -284,6 +286,7 @@ impl WallBase {
 	pub fn current_sense(&self, cache: &Cache, polygon_type: PolygonType) -> WallSenseType {
 		match polygon_type {
 			PolygonType::SOUND => self.sound,
+			PolygonType::LIGHT => self.sense,
 			PolygonType::SIGHT => {
 				if self.roof.map(|id| cache.tiles.occluded[id]).unwrap_or(true) {
 					self.sense
