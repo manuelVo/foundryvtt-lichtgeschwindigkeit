@@ -122,6 +122,7 @@ pub enum PolygonType {
 	SIGHT = 0,
 	SOUND = 1,
 	LIGHT = 2,
+	MOVEMENT = 3,
 }
 
 impl TryFrom<usize> for PolygonType {
@@ -132,6 +133,7 @@ impl TryFrom<usize> for PolygonType {
 			x if x == Self::SIGHT as usize => Ok(Self::SIGHT),
 			x if x == Self::SOUND as usize => Ok(Self::SOUND),
 			x if x == Self::LIGHT as usize => Ok(Self::LIGHT),
+			x if x == Self::MOVEMENT as usize => Ok(Self::MOVEMENT),
 			_ => Err(()),
 		}
 	}
@@ -247,6 +249,7 @@ pub struct WallBase {
 	pub p2: Point,
 	#[wasm_bindgen(skip)]
 	pub line: Line,
+	pub movement: WallSenseType,
 	pub sense: WallSenseType,
 	pub sound: WallSenseType,
 	pub door: DoorType,
@@ -260,6 +263,7 @@ impl WallBase {
 	pub fn new(
 		p1: Point,
 		p2: Point,
+		movement: WallSenseType,
 		sense: WallSenseType,
 		sound: WallSenseType,
 		door: DoorType,
@@ -273,6 +277,7 @@ impl WallBase {
 			p1,
 			p2,
 			line,
+			movement,
 			sense,
 			sound,
 			door,
@@ -287,6 +292,7 @@ impl WallBase {
 		match polygon_type {
 			PolygonType::SOUND => self.sound,
 			PolygonType::LIGHT => self.sense,
+			PolygonType::MOVEMENT => self.movement,
 			PolygonType::SIGHT => {
 				if self.roof.map(|id| cache.tiles.occluded[id]).unwrap_or(true) {
 					self.sense

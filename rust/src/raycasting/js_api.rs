@@ -129,6 +129,9 @@ extern "C" {
 	#[wasm_bindgen(method, getter)]
 	fn ds(this: &JsWallData) -> DoorState;
 
+	#[wasm_bindgen(method, getter, js_name = "move")]
+	fn movement(this: &JsWallData) -> WallSenseType;
+
 	#[wasm_bindgen(method, getter)]
 	fn sense(this: &JsWallData) -> WallSenseType;
 
@@ -163,6 +166,7 @@ impl WallBase {
 		Self::new(
 			Point::new(c[0].round(), c[1].round()),
 			Point::new(c[2].round(), c[3].round()),
+			data.movement(),
 			data.sense(),
 			data.sound(),
 			data.door(),
@@ -191,6 +195,7 @@ impl From<&str> for PolygonType {
 			"sight" => Self::SIGHT,
 			"light" => Self::LIGHT,
 			"sound" => Self::SOUND,
+			"move" => Self::MOVEMENT,
 			_ => {
 				log!(
 					"Lichtgeschwindigkeit | Unknown polygon type '{}', assuming 'sight'",

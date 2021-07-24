@@ -355,6 +355,7 @@ impl Serialize for WallBase {
 		let mut data = Vec::with_capacity(size_of::<Self>());
 		data.append(&mut self.p1.serialize());
 		data.append(&mut self.p2.serialize());
+		data.append(&mut self.movement.serialize());
 		data.append(&mut self.sense.serialize());
 		data.append(&mut self.sound.serialize());
 		data.append(&mut self.door.serialize());
@@ -369,6 +370,11 @@ impl Serialize for WallBase {
 		let (input, p1) = Point::deserialize(input, version)?;
 		let (input, p2) = Point::deserialize(input, version)?;
 		let line = Line::from_points(p1, p2);
+		let (input, movement) = if version >= 3 {
+			WallSenseType::deserialize(input, version)?
+		} else {
+			(input, WallSenseType::NORMAL)
+		};
 		let (input, sense) = WallSenseType::deserialize(input, version)?;
 		let (input, sound) = if version >= 3 {
 			WallSenseType::deserialize(input, version)?
@@ -394,6 +400,7 @@ impl Serialize for WallBase {
 				p1,
 				p2,
 				line,
+				movement,
 				sense,
 				sound,
 				door,
