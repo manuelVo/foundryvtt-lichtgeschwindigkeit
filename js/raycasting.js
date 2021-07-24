@@ -1,5 +1,7 @@
 import init, * as Lichtgeschwindigkeit from "../wasm/lichtgeschwindigkeit.js";
 
+let wallHeightEnabled;
+
 init().then(() => {
 	SightLayer.computeSight = wasmComputePolygon;
 	WallsLayer.prototype.computePolygon = wasmComputePolygon;
@@ -16,6 +18,12 @@ init().then(() => {
 		build_scene,
 		generate_test,
 	}
+});
+
+Hooks.once("init", () => {
+	// This can affect the outcome of vision calculations, so we wipe the cache just to be sure
+	wallHeightEnabled = game.modules.get("wall-height")?.active;
+	wipeCache();
 });
 
 let cache = undefined;
@@ -55,12 +63,12 @@ function wasmComputePolygon(origin, radius, { type = "sight", angle = 360, densi
 	let cacheRef;
 	if (unrestricted) {
 		if (!emptyCache)
-			emptyCache = Lichtgeschwindigkeit.buildCache([]);
+			emptyCache = Lichtgeschwindigkeit.buildCache([], wallHeightEnabled);
 		cacheRef = emptyCache;
 	}
 	else {
 		if (!cache)
-			cache = Lichtgeschwindigkeit.buildCache(canvas.walls.placeables);
+			cache = Lichtgeschwindigkeit.buildCache(canvas.walls.placeables, wallHeightEnabled);
 		cacheRef = cache
 	}
 

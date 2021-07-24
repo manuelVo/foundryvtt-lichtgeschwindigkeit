@@ -59,7 +59,7 @@ pub fn update_occlusion(cache: &mut Cache, js_tile_id: &str, occluded: bool) {
 
 #[allow(dead_code)]
 #[wasm_bindgen(js_name=buildCache)]
-pub fn build_cache(js_walls: Vec<JsValue>) -> Cache {
+pub fn build_cache(js_walls: Vec<JsValue>, enable_height: bool) -> Cache {
 	let mut occluded = vec![];
 	let mut id_map = FxHashMap::default();
 	let mut walls = Vec::with_capacity(js_walls.len());
@@ -75,7 +75,7 @@ pub fn build_cache(js_walls: Vec<JsValue>) -> Cache {
 		} else {
 			None
 		};
-		walls.push(WallBase::from_js(&wall, roof));
+		walls.push(WallBase::from_js(&wall, roof, enable_height));
 	}
 	Cache::build(walls, TileCache { occluded, id_map })
 }
@@ -152,9 +152,14 @@ extern "C" {
 }
 
 impl WallBase {
-	pub fn from_js(wall: &JsWall, roof: Option<TileId>) -> Self {
+	pub fn from_js(wall: &JsWall, roof: Option<TileId>, enable_height: bool) -> Self {
 		let data = wall.data();
 		let c = data.c();
+		let height = if enable_height {
+			data.flags().wall_height().into()
+		} else {
+			WallHeight::default()
+		};
 		Self::new(
 			Point::new(c[0].round(), c[1].round()),
 			Point::new(c[2].round(), c[3].round()),
@@ -163,7 +168,7 @@ impl WallBase {
 			data.door(),
 			data.ds(),
 			data.dir().unwrap_or(WallDirection::BOTH),
-			data.flags().wall_height().into(),
+			height,
 			roof,
 		)
 	}
