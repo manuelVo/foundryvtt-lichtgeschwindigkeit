@@ -10,6 +10,8 @@ use std::fmt::Debug;
 use std::mem::size_of;
 use yazi::{compress, decompress, CompressionLevel, Format};
 
+const CURRENT_VERSION: u8 = 3;
+
 pub trait Serialize {
 	fn serialize(&self) -> Vec<u8>;
 	fn deserialize(input: &[u8], version: u8) -> IResult<&[u8], Self>
@@ -142,7 +144,7 @@ impl Serialize for TestCase {
 }
 
 pub fn serialize_ascii85<T: Serialize>(data: T) -> String {
-	let version = 3;
+	let version = CURRENT_VERSION;
 	let data = data.serialize();
 	let mut compressed = compress(&data, Format::Zlib, CompressionLevel::BestSize).unwrap();
 	compressed.insert(0, version);
@@ -152,7 +154,7 @@ pub fn serialize_ascii85<T: Serialize>(data: T) -> String {
 pub fn deserialize_ascii85<T: Serialize>(input: &str) -> T {
 	let input = ascii85::decode(input).unwrap();
 	let version = input[0];
-	if version > 2 {
+	if version > CURRENT_VERSION {
 		panic!("Data stream has a wrong version number.");
 	}
 	let input = &input[1..];
