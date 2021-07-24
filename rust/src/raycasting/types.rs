@@ -402,13 +402,18 @@ impl WallWithAngles {
 	}
 }
 
+pub struct Intersection {
+	pub point: Point,
+	pub height: WallHeight,
+}
+
 // TODO Locate this into a different module
 #[wasm_bindgen]
 pub struct Cache {
 	#[wasm_bindgen(skip)]
 	pub walls: Vec<WallBase>,
 	#[wasm_bindgen(skip)]
-	pub intersections: Vec<Point>,
+	pub intersections: Vec<Intersection>,
 	#[wasm_bindgen(skip)]
 	pub tiles: TileCache,
 }
@@ -423,7 +428,8 @@ impl Cache {
 		}
 	}
 
-	fn calc_intersections(walls: &Vec<WallBase>) -> Vec<Point> {
+	fn calc_intersections(walls: &Vec<WallBase>) -> Vec<Intersection> {
+		use partial_min_max::{max, min};
 		let mut intersections = Vec::new();
 		if walls.len() >= 2 {
 			for i in 0..walls.len() - 1 {
@@ -431,17 +437,24 @@ impl Cache {
 					let (i_walls, j_walls) = walls.split_at(i + 1);
 					let wall1 = &i_walls[i];
 					let wall2 = &j_walls[j];
-					let intersection = wall1.line.intersection(&wall2.line);
-					match intersection {
-						Some(intersection) => {
-							if is_intersection_on_wall(intersection, wall1)
-								&& is_intersection_on_wall(intersection, wall2)
-							{
-								intersections.push(intersection);
+					let bottom = max(wall1.height.bottom, wall2.height.bottom);
+					let top = min(wall1.height.top, wall2.height.top);
+					if bottom <= top {
+						let point = wall1.line.intersection(&wall2.line);
+						match point {
+							Some(point) => {
+								if is_intersection_on_wall(point, wall1)
+									&& is_intersection_on_wall(point, wall2)
+								{
+									intersections.push(Intersection {
+										point,
+										height: WallHeight { top, bottom },
+									});
+								}
 							}
-						}
-						None => {}
-					};
+							None => {}
+						};
+					}
 				}
 			}
 		}

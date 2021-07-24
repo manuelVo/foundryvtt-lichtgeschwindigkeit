@@ -158,11 +158,13 @@ pub fn prepare_data(
 	}
 
 	for intersection in &cache.intersections {
-		endpoints
-			.entry(*intersection)
-			.or_insert_with(|| Rc::new(RefCell::new(Endpoint::new(origin, *intersection))))
-			.borrow_mut()
-			.is_intersection = true;
+		if height >= intersection.height.bottom && height <= intersection.height.top {
+			endpoints
+				.entry(intersection.point)
+				.or_insert_with(|| Rc::new(RefCell::new(Endpoint::new(origin, intersection.point))))
+				.borrow_mut()
+				.is_intersection = true;
+		}
 	}
 
 	let mut sorted_endpoints = endpoints
