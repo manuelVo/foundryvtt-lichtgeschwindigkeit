@@ -12,7 +12,7 @@ use std::fs::read_to_string;
 
 fn main() {
 	let data = deserialize_ascii85::<RaycastingCall>(&read_to_string("data.txt").unwrap());
-	let cache = Cache::build(data.walls);
+	let cache = Cache::build(data.walls, TileCache::from_roofs(data.roofs));
 	let mut sum = 0;
 	let mut los = None;
 	for _i in 0..1 {

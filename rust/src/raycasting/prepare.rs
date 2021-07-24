@@ -40,7 +40,7 @@ pub fn prepare_data(
 			continue;
 		}
 
-		let sense = wall.current_sense(polygon_type);
+		let sense = wall.current_sense(&cache, polygon_type);
 		if sense == WallSenseType::NONE {
 			continue;
 		}
@@ -83,7 +83,12 @@ pub fn prepare_data(
 			is_start_wall = false;
 		}
 
-		let wall = Rc::new(Wall::from_base(*wall, Rc::clone(&end), polygon_type));
+		let wall = Rc::new(Wall::from_base(
+			*wall,
+			Rc::clone(&end),
+			&cache,
+			polygon_type,
+		));
 		if let Some(split_walls) = restrict_vision_angle(&wall, &start, &end, &vision_angle) {
 			for wall in &split_walls {
 				if let Some(wall) = wall {

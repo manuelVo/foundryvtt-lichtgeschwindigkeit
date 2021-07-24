@@ -19,22 +19,35 @@ pub trait Serialize {
 		Self: Sized;
 }
 
-trait SerializeByte {
-	fn serialize(&self) -> u8;
-	fn deserialize(input: &[u8]) -> IResult<&[u8], Self>
+pub trait SerializeByte {
+	fn serialize_byte(&self) -> u8;
+	fn deserialize_byte(input: &[u8]) -> IResult<&[u8], Self>
 	where
 		Self: Sized;
+}
+
+impl<T: SerializeByte> Serialize for T
+where
+	Self: Sized,
+{
+	fn serialize(&self) -> Vec<u8> {
+		vec![self.serialize_byte()]
+	}
+
+	fn deserialize(input: &[u8], _version: u8) -> IResult<&[u8], Self> {
+		Self::deserialize_byte(input)
+	}
 }
 
 macro_rules! ImplSerializeByteForEnum (
 	($name:ident) => {
 		impl SerializeByte for $name {
-			fn serialize(&self) -> u8 {
+			fn serialize_byte(&self) -> u8 {
 				// TODO Try into would be better here
 				*self as u8
 			}
 
-			fn deserialize(input: &[u8]) -> IResult<&[u8], Self>
+			fn deserialize_byte(input: &[u8]) -> IResult<&[u8], Self>
 			where
 				Self: Sized + TryFrom<usize>,
 				<Self as TryFrom<usize>>::Error: Debug,
@@ -57,6 +70,31 @@ impl Serialize for f64 {
 			input,
 			Self::from_be_bytes(representation.try_into().unwrap()),
 		))
+	}
+}
+
+impl Serialize for u32 {
+	fn serialize(&self) -> Vec<u8> {
+		self.to_be_bytes().into()
+	}
+
+	fn deserialize(input: &[u8], _version: u8) -> IResult<&[u8], Self> {
+		let (input, representation) = take(size_of::<Self>())(input)?;
+		Ok((
+			input,
+			Self::from_be_bytes(representation.try_into().unwrap()),
+		))
+	}
+}
+
+impl Serialize for usize {
+	fn serialize(&self) -> Vec<u8> {
+		u32::try_from(*self).unwrap().serialize()
+	}
+
+	fn deserialize(input: &[u8], version: u8) -> IResult<&[u8], Self> {
+		let (input, value) = u32::deserialize(input, version)?;
+		Ok((input, value.try_into().unwrap()))
 	}
 }
 
@@ -114,11 +152,51 @@ impl<T: Serialize> Serialize for Vec<T> {
 	}
 }
 
+impl<T: Serialize> Serialize for Option<T> {
+	fn serialize(&self) -> Vec<u8> {
+		let mut data = vec![];
+		data.append(&mut self.is_some().serialize());
+		if let Some(value) = self {
+			data.append(&mut value.serialize());
+		}
+		data
+	}
+
+	fn deserialize(input: &[u8], version: u8) -> IResult<&[u8], Self> {
+		let (input, is_some) = bool::deserialize(input, version)?;
+		if !is_some {
+			return Ok((input, None));
+		}
+		let (input, value) = T::deserialize(input, version)?;
+		Ok((input, Some(value)))
+	}
+}
+
 ImplSerializeByteForEnum!(WallSenseType);
 ImplSerializeByteForEnum!(DoorType);
 ImplSerializeByteForEnum!(DoorState);
 ImplSerializeByteForEnum!(WallDirection);
 ImplSerializeByteForEnum!(PolygonType);
+
+impl SerializeByte for bool {
+	fn serialize_byte(&self) -> u8 {
+		if *self {
+			1
+		} else {
+			0
+		}
+	}
+
+	fn deserialize_byte(input: &[u8]) -> IResult<&[u8], Self> {
+		let (input, data) = take(1usize)(input)?;
+		let data = match data[0] {
+			0 => false,
+			1 => true,
+			_ => unreachable!(),
+		};
+		Ok((input, data))
+	}
+}
 
 pub struct TestCase {
 	pub call: RaycastingCall,
@@ -164,6 +242,7 @@ pub fn deserialize_ascii85<T: Serialize>(input: &str) -> T {
 
 pub struct RaycastingCall {
 	pub walls: Vec<WallBase>,
+	pub roofs: Vec<bool>,
 	pub origin: Point,
 	pub height: f64,
 	pub radius: f64,
@@ -218,6 +297,7 @@ impl Serialize for RaycastingCall {
 	fn serialize(&self) -> Vec<u8> {
 		let mut data = Vec::new();
 		data.append(&mut self.walls.serialize());
+		data.append(&mut self.roofs.serialize());
 		data.append(&mut self.origin.serialize());
 		data.append(&mut self.height.serialize());
 		data.append(&mut self.radius.serialize());
@@ -225,12 +305,17 @@ impl Serialize for RaycastingCall {
 		data.append(&mut self.density.serialize());
 		data.append(&mut self.angle.serialize());
 		data.append(&mut self.rotation.serialize());
-		data.push(self.polygon_type.serialize());
+		data.append(&mut self.polygon_type.serialize());
 		data
 	}
 
 	fn deserialize(input: &[u8], version: u8) -> IResult<&[u8], Self> {
 		let (input, walls) = Vec::deserialize(input, version)?;
+		let (input, roofs) = if version >= 3 {
+			Vec::deserialize(input, version)?
+		} else {
+			(input, vec![])
+		};
 		let (input, origin) = Point::deserialize(input, version)?;
 		let (input, height) = if version >= 2 {
 			f64::deserialize(input, version)?
@@ -243,7 +328,7 @@ impl Serialize for RaycastingCall {
 		let (input, angle) = f64::deserialize(input, version)?;
 		let (input, rotation) = f64::deserialize(input, version)?;
 		let (input, polygon_type) = if version >= 3 {
-			PolygonType::deserialize(input)?
+			PolygonType::deserialize(input, version)?
 		} else {
 			(input, PolygonType::SIGHT)
 		};
@@ -251,6 +336,7 @@ impl Serialize for RaycastingCall {
 			input,
 			Self {
 				walls,
+				roofs,
 				origin,
 				height,
 				radius,
@@ -269,12 +355,13 @@ impl Serialize for WallBase {
 		let mut data = Vec::with_capacity(size_of::<Self>());
 		data.append(&mut self.p1.serialize());
 		data.append(&mut self.p2.serialize());
-		data.push(self.sense.serialize());
-		data.push(self.sound.serialize());
-		data.push(self.door.serialize());
-		data.push(self.ds.serialize());
-		data.push(self.dir.serialize());
+		data.append(&mut self.sense.serialize());
+		data.append(&mut self.sound.serialize());
+		data.append(&mut self.door.serialize());
+		data.append(&mut self.ds.serialize());
+		data.append(&mut self.dir.serialize());
 		data.append(&mut self.height.serialize());
+		data.append(&mut self.roof.serialize());
 		data
 	}
 
@@ -282,19 +369,24 @@ impl Serialize for WallBase {
 		let (input, p1) = Point::deserialize(input, version)?;
 		let (input, p2) = Point::deserialize(input, version)?;
 		let line = Line::from_points(p1, p2);
-		let (input, sense) = WallSenseType::deserialize(input)?;
+		let (input, sense) = WallSenseType::deserialize(input, version)?;
 		let (input, sound) = if version >= 3 {
-			WallSenseType::deserialize(input)?
+			WallSenseType::deserialize(input, version)?
 		} else {
 			(input, sense)
 		};
-		let (input, door) = DoorType::deserialize(input)?;
-		let (input, ds) = DoorState::deserialize(input)?;
-		let (input, dir) = WallDirection::deserialize(input)?;
+		let (input, door) = DoorType::deserialize(input, version)?;
+		let (input, ds) = DoorState::deserialize(input, version)?;
+		let (input, dir) = WallDirection::deserialize(input, version)?;
 		let (input, height) = if version >= 1 {
 			WallHeight::deserialize(input, version)?
 		} else {
 			(input, WallHeight::default())
+		};
+		let (input, roof) = if version >= 3 {
+			Option::deserialize(input, version)?
+		} else {
+			(input, None)
 		};
 		Ok((
 			input,
@@ -308,6 +400,7 @@ impl Serialize for WallBase {
 				ds,
 				dir,
 				height,
+				roof,
 			},
 		))
 	}
@@ -329,6 +422,7 @@ pub fn js_serialize_data(
 	let polygon_type = PolygonType::from(polygon_type);
 	let data = RaycastingCall {
 		walls: cache.walls.clone(),
+		roofs: cache.tiles.occluded.clone(),
 		origin: Point::from(&origin.into()),
 		height,
 		radius,
@@ -352,7 +446,10 @@ pub fn js_deserialize_data(str: &str) -> Object {
 #[allow(dead_code)]
 pub fn js_generate_test(str: &str) -> String {
 	let data = deserialize_ascii85::<RaycastingCall>(str);
-	let cache = Cache::build(data.walls.clone());
+	let cache = Cache::build(
+		data.walls.clone(),
+		TileCache::from_roofs(data.roofs.clone()),
+	);
 	let (los, fov) = compute_polygon(
 		&cache,
 		data.origin,

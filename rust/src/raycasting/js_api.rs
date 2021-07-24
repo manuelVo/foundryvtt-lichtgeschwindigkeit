@@ -1,7 +1,10 @@
 use crate::geometry::Point;
-use crate::raycasting::types::{Cache, PolygonType, VisionAngle, WallBase, WallHeight};
+use crate::raycasting::types::{
+	Cache, PolygonType, TileCache, TileId, VisionAngle, WallBase, WallHeight,
+};
 use crate::raycasting::{compute_polygon, DoorState, DoorType, WallDirection, WallSenseType};
 use js_sys::{Array, Object};
+use rustc_hash::FxHashMap;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(js_name=computePolygon)]
@@ -48,13 +51,33 @@ pub fn js_compute_polygon(
 }
 
 #[allow(dead_code)]
+#[wasm_bindgen(js_name=updateOcclusion)]
+pub fn update_occlusion(cache: &mut Cache, js_tile_id: &str, occluded: bool) {
+	let id = *cache.tiles.id_map.get(js_tile_id).unwrap();
+	cache.tiles.occluded[id] = occluded;
+}
+
+#[allow(dead_code)]
 #[wasm_bindgen(js_name=buildCache)]
 pub fn build_cache(js_walls: Vec<JsValue>) -> Cache {
+	let mut occluded = vec![];
+	let mut id_map = FxHashMap::default();
 	let mut walls = Vec::with_capacity(js_walls.len());
 	for wall in js_walls {
-		walls.push(WallBase::from_js(&wall.into()));
+		let wall = JsWall::from(wall);
+		let roof = if let Some(roof) = wall.roof() {
+			let next_id = occluded.len();
+			let id = id_map.entry(roof.id()).or_insert_with(|| {
+				occluded.push(roof.occluded());
+				next_id
+			});
+			Some(*id)
+		} else {
+			None
+		};
+		walls.push(WallBase::from_js(&wall, roof));
 	}
-	Cache::build(walls)
+	Cache::build(walls, TileCache { occluded, id_map })
 }
 
 #[allow(dead_code)]
@@ -92,6 +115,9 @@ extern "C" {
 	fn roof(this: &JsWall) -> Option<JsTile>;
 
 	#[wasm_bindgen(method, getter)]
+	fn id(this: &JsTile) -> String;
+
+	#[wasm_bindgen(method, getter)]
 	fn occluded(this: &JsTile) -> bool;
 
 	#[wasm_bindgen(method, getter)]
@@ -126,23 +152,19 @@ extern "C" {
 }
 
 impl WallBase {
-	pub fn from_js(wall: &JsWall) -> Self {
+	pub fn from_js(wall: &JsWall, roof: Option<TileId>) -> Self {
 		let data = wall.data();
 		let c = data.c();
-		let mut sense = data.sense();
-		let is_interior = !wall.roof().map(|roof| roof.occluded()).unwrap_or(true);
-		if is_interior {
-			sense = WallSenseType::NORMAL;
-		}
 		Self::new(
 			Point::new(c[0].round(), c[1].round()),
 			Point::new(c[2].round(), c[3].round()),
-			sense,
+			data.sense(),
 			data.sound(),
 			data.door(),
 			data.ds(),
 			data.dir().unwrap_or(WallDirection::BOTH),
 			data.flags().wall_height().into(),
+			roof,
 		)
 	}
 }

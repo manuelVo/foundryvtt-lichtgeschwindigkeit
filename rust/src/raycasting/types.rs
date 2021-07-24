@@ -1,3 +1,4 @@
+use rustc_hash::FxHashMap;
 use wasm_bindgen::prelude::*;
 
 use crate::geometry::{Line, Point};
@@ -188,6 +189,7 @@ impl Wall {
 	pub fn from_base(
 		base: WallBase,
 		end: Rc<RefCell<Endpoint>>,
+		cache: &Cache,
 		polygon_type: PolygonType,
 	) -> Self {
 		let see_through_angle;
@@ -205,7 +207,7 @@ impl Wall {
 			}
 			see_through_angle = Some(angle);
 		}
-		let sense = base.current_sense(polygon_type);
+		let sense = base.current_sense(&cache, polygon_type);
 		Self {
 			p1: base.p1,
 			p2: base.p2,
@@ -249,6 +251,7 @@ pub struct WallBase {
 	pub ds: DoorState,
 	pub dir: WallDirection,
 	pub height: WallHeight,
+	pub roof: Option<TileId>,
 }
 
 impl WallBase {
@@ -261,6 +264,7 @@ impl WallBase {
 		ds: DoorState,
 		dir: WallDirection,
 		height: WallHeight,
+		roof: Option<TileId>,
 	) -> Self {
 		let line = Line::from_points(p1, p2);
 		Self {
@@ -272,14 +276,21 @@ impl WallBase {
 			door,
 			ds,
 			dir,
+			roof,
 			height,
 		}
 	}
 
-	pub fn current_sense(&self, polygon_type: PolygonType) -> WallSenseType {
+	pub fn current_sense(&self, cache: &Cache, polygon_type: PolygonType) -> WallSenseType {
 		match polygon_type {
-			PolygonType::SIGHT => self.sense,
 			PolygonType::SOUND => self.sound,
+			PolygonType::SIGHT => {
+				if self.roof.map(|id| cache.tiles.occluded[id]).unwrap_or(true) {
+					self.sense
+				} else {
+					WallSenseType::NORMAL
+				}
+			}
 		}
 	}
 }
@@ -389,14 +400,17 @@ pub struct Cache {
 	pub walls: Vec<WallBase>,
 	#[wasm_bindgen(skip)]
 	pub intersections: Vec<Point>,
+	#[wasm_bindgen(skip)]
+	pub tiles: TileCache,
 }
 
 impl Cache {
-	pub fn build(walls: Vec<WallBase>) -> Self {
+	pub fn build(walls: Vec<WallBase>, tiles: TileCache) -> Self {
 		let intersections = Self::calc_intersections(&walls);
 		Self {
 			walls,
 			intersections,
+			tiles,
 		}
 	}
 
@@ -423,5 +437,22 @@ impl Cache {
 			}
 		}
 		intersections
+	}
+}
+
+pub type TileId = usize;
+
+#[derive(Default)]
+pub struct TileCache {
+	pub occluded: Vec<bool>,
+	pub id_map: FxHashMap<String, TileId>,
+}
+
+impl TileCache {
+	pub fn from_roofs(occluded: Vec<bool>) -> Self {
+		Self {
+			occluded,
+			..Self::default()
+		}
 	}
 }

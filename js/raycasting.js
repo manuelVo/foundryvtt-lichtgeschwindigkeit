@@ -4,9 +4,14 @@ init().then(() => {
 	SightLayer.computeSight = wasmComputePolygon;
 	WallsLayer.prototype.computePolygon = wasmComputePolygon;
 	Hooks.on("canvasInit", wipeCache);
+	Hooks.on("canvasReady", wipeCache);
 	Hooks.on("createWall", wipeCache);
 	Hooks.on("updateWall", wipeCache);
 	Hooks.on("deleteWall", wipeCache);
+	Hooks.on("createTile", wipeCache);
+	Hooks.on("updateTile", wipeCache);
+	Hooks.on("deleteTile", wipeCache);
+	hookUpdateOcclusion();
 	window.lichtgeschwindigkeit = {
 		build_scene,
 		generate_test,
@@ -20,6 +25,18 @@ function wipeCache() {
 	if (cache)
 		Lichtgeschwindigkeit.wipeCache(cache);
 	cache = undefined;
+}
+
+function hookUpdateOcclusion() {
+	let original = Tile.prototype.updateOcclusion;
+	Tile.prototype.updateOcclusion = function(tokens) {
+		const oldOcclusion = this.occluded;
+		original.call(this, tokens);
+		if (cache && oldOcclusion != this.occluded && this.data.occlusion.mode === CONST.TILE_OCCLUSION_MODES.ROOF) {
+			console.warn("updating occlusion for " + this.id + " to " + this.occluded);
+			Lichtgeschwindigkeit.updateOcclusion(cache, this.id, this.occluded);
+		}
+	}
 }
 
 function wasmComputePolygon(origin, radius, { type = "sight", angle = 360, density = 6, rotation = 0, unrestricted = false } = {}) {
