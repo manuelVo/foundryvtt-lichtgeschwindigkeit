@@ -7,6 +7,13 @@ use js_sys::{Array, Object};
 use rustc_hash::FxHashMap;
 use wasm_bindgen::prelude::*;
 
+#[allow(unused)]
+macro_rules! log {
+	( $( $t:tt )* ) => {
+		log(&format!( $( $t )* ));
+	};
+}
+
 #[wasm_bindgen(js_name=computePolygon)]
 #[allow(dead_code)]
 pub fn js_compute_polygon(
@@ -84,13 +91,6 @@ pub fn build_cache(js_walls: Vec<JsValue>, enable_height: bool) -> Cache {
 #[wasm_bindgen(js_name=wipeCache)]
 pub fn wipe_cache(cache: Cache) {
 	drop(cache);
-}
-
-#[allow(unused)]
-macro_rules! log {
-	( $( $t:tt )* ) => {
-		log(&format!( $( $t )* ));
-	};
 }
 
 #[wasm_bindgen]
