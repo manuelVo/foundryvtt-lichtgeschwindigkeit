@@ -1,3 +1,14 @@
+## 1.4.0
+### New features
+- The cache that was introduced in 1.3.0, but disabled in 1.3.2 due to severe bugs is now fixed. It's now enabled again. This change makes the vision calculation about 20% faster than it was in 1.3.4.
+- Lichtgeschwindigkeit now properly separates walls at different elevations that were placed with the Wall Height or Levels module, leading to a potentially huge boost in performance for those maps. The vision calculation within a level will now have nearly the same speed as if the level was placed on a entirely separate scene.
+- Lichtgeschwindigkeit now calculates polygons of type `movement`, which increases compatibility with other modules.
+
+### Bugfixes
+- Light sources withing buildings that have a wall now shine through the windows, as they are supposed to.
+- Fixed a bug that wrongly rendered walls as if they had a height while the "Wall Height" module is disabled.
+
+
 ## 1.3.4
 ### Bugfixes
 - Fixed a bug that could cause the vision calculation to crash when a token or light was placed exactly on the endpoint of a wall [#19](https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit/issues/19)
