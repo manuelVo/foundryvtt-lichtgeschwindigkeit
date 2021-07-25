@@ -60,8 +60,9 @@ pub fn js_compute_polygon(
 #[allow(dead_code)]
 #[wasm_bindgen(js_name=updateOcclusion)]
 pub fn update_occlusion(cache: &mut Cache, js_tile_id: &str, occluded: bool) {
-	let id = *cache.tiles.id_map.get(js_tile_id).unwrap();
-	cache.tiles.occluded[id] = occluded;
+	if let Some(id) = cache.tiles.id_map.get(js_tile_id) {
+		cache.tiles.occluded[*id] = occluded;
+	}
 }
 
 #[allow(dead_code)]
