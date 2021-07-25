@@ -1,3 +1,8 @@
+## 1.4.1
+### Bugfixes
+- The vision calculation algorithm no longer crashes when stepping under a roof that has no walls below it
+
+
 ## 1.4.0
 ### New features
 - The cache that was introduced in 1.3.0, but disabled in 1.3.2 due to severe bugs is now fixed. It's now enabled again. This change makes the vision calculation about 20% faster than it was in 1.3.4.

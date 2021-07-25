@@ -2,7 +2,7 @@
 	"name": "lichtgeschwindigkeit",
 	"title": "Lichtgeschwindigkeit",
 	"description": "Improves the speed of the vision calculation in Foundry.",
-	"version": "1.4.0",
+	"version": "1.4.1",
 	"minimumCoreVersion": "0.7.9",
 	"compatibleCoreVersion": "0.8.8",
 	"authors": [
@@ -18,7 +18,7 @@
 		"js/raycasting.js"
 	],
 	"url": "https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit",
-	"download": "https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit/releases/download/v1.4.0/lichtgeschwindigkeit-1.4.0.zip",
+	"download": "https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit/releases/download/v1.4.1/lichtgeschwindigkeit-1.4.1.zip",
 	"manifest": "https://raw.githubusercontent.com/manuelVo/foundryvtt-lichtgeschwindigkeit/master/module.json",
 	"readme": "https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit/blob/master/README.md",
 	"changelog": "https://github.com/manuelVo/foundryvtt-lichtgeschwindigkeit/blob/master/CHANGELOG.md",
