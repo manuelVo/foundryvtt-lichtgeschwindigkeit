@@ -1,6 +1,6 @@
 [package]
 name = "lichtgeschwindigkeit"
-version = "1.4.1"
+version = "1.4.2"
 authors = ["Manuel Vögele <develop@manuel-voegele.de>"]
 edition = "2018"
 

@@ -1,3 +1,7 @@
+## 1.4.2
+### Bugfixes
+- Fixed a bug where the background image of a map could occasionally flicker on small maps with For of War enabled
+
 ## 1.4.1
 ### Bugfixes
 - The vision calculation algorithm no longer crashes when stepping under a roof that has no walls below it
