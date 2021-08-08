@@ -24,6 +24,10 @@ function getRecycledRenderTexture(d) {
 }
 
 function recycleRenderTexture(tex) {
+	if (!(tex instanceof PIXI.RenderTexture)) {
+		tex.destroy(true);
+		return;
+	}
 	if (recycledRenderTexture) {
 		recycledRenderTexture.destroy(true);
 	}
