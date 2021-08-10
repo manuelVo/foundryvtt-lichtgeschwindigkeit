@@ -12,7 +12,7 @@ let recycledRenderTexture = undefined;
 
 function getRecycledRenderTexture(d) {
 	if (recycledRenderTexture) {
-		if (recycledRenderTexture.width === d.width && recycledRenderTexture.height === d.height && recycledRenderTexture.resolution === d.resolution) {
+		if (recycledRenderTexture.baseTexture && recycledRenderTexture.width === d.width && recycledRenderTexture.height === d.height && recycledRenderTexture.resolution === d.resolution) {
 			const tex = recycledRenderTexture;
 			recycledRenderTexture = undefined;
 			return tex;
