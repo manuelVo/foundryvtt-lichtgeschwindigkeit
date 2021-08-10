@@ -1,6 +1,12 @@
+## 1.4.3
+### Bugfixes
+- Fixed a bug where the fog of war calclation could fail after switching between maps of vastly different sizes
+
+
 ## 1.4.2
 ### Bugfixes
 - Fixed a bug where the background image of a map could occasionally flicker on small maps with For of War enabled
+
 
 ## 1.4.1
 ### Bugfixes
