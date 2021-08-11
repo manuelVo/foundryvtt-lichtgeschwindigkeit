@@ -1,6 +1,6 @@
 {
 	"name": "lichtgeschwindigkeit",
-	"title": "Lichtgeschwindigkeit",
+	"title": "Lichtgeschwindigkeit (Lightspeed)",
 	"description": "Improves the speed of the vision calculation in Foundry.",
 	"version": "1.4.3",
 	"minimumCoreVersion": "0.7.9",
