@@ -1,3 +1,8 @@
+## 1.4.4
+### Bugfixes
+- The vision calculation algorithm no longer crashes when a token's vision radius is set to 0.
+
+
 ## 1.4.3
 ### Bugfixes
 - Fixed a bug where the fog of war calclation could fail after switching between maps of vastly different sizes
