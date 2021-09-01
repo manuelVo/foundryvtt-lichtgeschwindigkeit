@@ -48,6 +48,10 @@ function hookUpdateOcclusion() {
 }
 
 function wasmComputePolygon(origin, radius, { type = "sight", angle = 360, density = 6, rotation = 0, unrestricted = false } = {}) {
+	// TODO This hotfix may no longer be necessary in foundry 9
+	if (type === "sight")
+		radius = Math.max(radius, canvas.dimensions.size >> 1); // canvas.dimensions.size >> 1 is a fast method of calculating canvas.dimensions.size / 2
+
 	let debugEnabled = CONFIG.debug.sightRays;
 	// The maximum ray distance needs to reach all areas of the canvas
 	let d = canvas.dimensions;
