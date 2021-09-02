@@ -43,6 +43,14 @@ macro_rules! raytracing_test (
 	};
 );
 
+raytracing_test!(
+	limited_vision_angle_overflow_end_hidden,
+	"limited_vision_angle_overflow_end_hidden"
+);
+raytracing_test!(
+	limited_vision_angle_overflow_start_hidden,
+	"limited_vision_angle_overflow_start_hidden"
+);
 raytracing_test!(limited_vision_angle, "limited_vision_angle");
 raytracing_test!(zero_width_walls, "zero_width_walls");
 raytracing_test!(directional_walls_issue_4, "4-directional_walls");
