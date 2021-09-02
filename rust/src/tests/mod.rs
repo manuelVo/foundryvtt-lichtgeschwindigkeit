@@ -88,3 +88,7 @@ raytracing_test!(
 	origin_on_wall_endpoint_issue_19,
 	"19-origin_on_wall_endpoint"
 );
+raytracing_test!(
+	limited_vision_angle_overflow_both_visible_issue_25,
+	"25-limited_vision_angle_overflow_both_visible"
+);
