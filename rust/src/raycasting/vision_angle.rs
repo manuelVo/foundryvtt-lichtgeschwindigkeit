@@ -3,6 +3,8 @@ use crate::raycasting::types::{Endpoint, FovPoint, VisionAngle, Wall, WallWithAn
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use super::util::between_exclusive;
+
 pub fn restrict_vision_angle(
 	wall: &Wall,
 	start: &Rc<RefCell<Endpoint>>,
@@ -147,38 +149,34 @@ pub fn restrict_vision_angle(
 				{
 					return Some([None, None]);
 				}
-				let mut wall_shortened = false;
-				let mut start_point = start.borrow().point;
-				let mut start_angle = start.borrow().angle;
-				let mut end_point = end.borrow().point;
-				let mut end_angle = end.borrow().angle;
-				if start.borrow().angle < vision_angle.start
-					&& start.borrow().angle > vision_angle.end
-				{
-					if let Some(intersection) = vision_angle.start_ray.intersection(&wall.line) {
-						wall_shortened = true;
-						start_angle = vision_angle.start;
-						start_point = intersection;
-					}
-				}
-				if end.borrow().angle > vision_angle.end && end.borrow().angle < vision_angle.start
-				{
-					if let Some(intersection) = vision_angle.end_ray.intersection(&wall.line) {
-						wall_shortened = true;
-						end_angle = vision_angle.end;
-						end_point = intersection;
-					}
-				}
-				if wall_shortened {
-					let new_wall = WallWithAngles::new_copy_props(
+				let mut split_walls = [None, None];
+				if between_exclusive(vision_angle.end, start.borrow().angle, end.borrow().angle) {
+					let start_point = start.borrow().point;
+					let start_angle = start.borrow().angle;
+					let end_point = vision_angle.end_ray.intersection(&wall.line).unwrap();
+					let end_angle = vision_angle.end;
+					split_walls[0] = Some(WallWithAngles::new_copy_props(
 						&wall,
 						start_point,
 						end_point,
 						start_angle,
 						end_angle,
-					);
-					return Some([Some(new_wall), None]);
+					));
 				}
+				if between_exclusive(vision_angle.start, start.borrow().angle, end.borrow().angle) {
+					let start_point = vision_angle.start_ray.intersection(&wall.line).unwrap();
+					let start_angle = vision_angle.start;
+					let end_point = end.borrow().point;
+					let end_angle = end.borrow().angle;
+					split_walls[1] = Some(WallWithAngles::new_copy_props(
+						&wall,
+						start_point,
+						end_point,
+						start_angle,
+						end_angle,
+					));
+				}
+				return Some(split_walls);
 			}
 		}
 	}

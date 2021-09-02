@@ -9,6 +9,11 @@ pub fn between<T: Copy + PartialOrd>(num: T, a: T, b: T) -> bool {
 	num >= min && num <= max
 }
 
+pub fn between_exclusive<T: Copy + PartialOrd>(num: T, a: T, b: T) -> bool {
+	let (min, max) = if a < b { (a, b) } else { (b, a) };
+	num > min && num < max
+}
+
 // Check if angle1 is smaller than (i.e. is located on the circle counter clockwise from) angle2
 // This check is normalized to be able to deal with the overflow between 360° and 0°
 pub fn is_smaller_relative(angle1: f64, angle2: f64) -> bool {
