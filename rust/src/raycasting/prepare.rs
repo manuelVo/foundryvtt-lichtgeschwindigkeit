@@ -169,6 +169,7 @@ pub fn prepare_data(
 
 	let mut sorted_endpoints = endpoints
 		.values()
+		.filter(|val| val.borrow().starting_walls.len() + val.borrow().ending_walls.len() > 0)
 		.map(|val| Rc::clone(&val))
 		.collect::<Vec<_>>();
 	sorted_endpoints
