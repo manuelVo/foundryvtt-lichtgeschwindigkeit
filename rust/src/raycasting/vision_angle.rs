@@ -108,6 +108,16 @@ pub fn restrict_vision_angle(
 						end_angle,
 					));
 				}
+
+				if split_walls.iter().all(|wall| wall.is_none())
+					&& !between_exclusive(
+						start.borrow().angle,
+						vision_angle.start,
+						vision_angle.end,
+					) && !between_exclusive(end.borrow().angle, vision_angle.start, vision_angle.end)
+				{
+					return None;
+				}
 				return Some(split_walls);
 			}
 		} else {
@@ -142,13 +152,6 @@ pub fn restrict_vision_angle(
 					return Some([Some(new_wall), None]);
 				}
 			} else {
-				if start.borrow().angle > vision_angle.end
-					&& start.borrow().angle < vision_angle.start
-					&& end.borrow().angle > vision_angle.end
-					&& end.borrow().angle < vision_angle.start
-				{
-					return Some([None, None]);
-				}
 				let mut split_walls = [None, None];
 				if between_exclusive(vision_angle.end, start.borrow().angle, end.borrow().angle) {
 					let start_point = start.borrow().point;
@@ -176,6 +179,15 @@ pub fn restrict_vision_angle(
 						end_angle,
 					));
 				}
+				if split_walls.iter().all(|wall| wall.is_none())
+					&& !between_exclusive(
+						start.borrow().angle,
+						vision_angle.start,
+						vision_angle.end,
+					) && !between_exclusive(end.borrow().angle, vision_angle.start, vision_angle.end)
+				{
+					return None;
+				}
 				return Some(split_walls);
 			}
 		}
@@ -189,13 +201,10 @@ pub fn add_vision_wedge(
 	vision_angle: VisionAngle,
 	start_gap_fov: &mut bool,
 ) -> Vec<FovPoint> {
-	let mut start_index = los_points.len();
-	let mut end_index = los_points.len();
-	let visible_points_from_start: &[FovPoint];
-	let visible_points_to_end: &[FovPoint];
+	let mut visible_points_from_start: &[FovPoint];
+	let mut visible_points_to_end: &[FovPoint];
 	let start_end_swapped;
 	if vision_angle.start < vision_angle.end {
-		start_index = 0;
 		if los_points.len() > 0 && los_points.last().unwrap().angle == vision_angle.end {
 			los_points.last_mut().unwrap().gap = false;
 		}
@@ -204,6 +213,8 @@ pub fn add_vision_wedge(
 		start_end_swapped = false;
 		*start_gap_fov = false;
 	} else {
+		let mut start_index = los_points.len();
+		let mut end_index = los_points.len();
 		for i in 0..los_points.len() {
 			// TODO Check if > or >=
 			if los_points[i].angle > vision_angle.end {
@@ -233,8 +244,11 @@ pub fn add_vision_wedge(
 	}
 
 	let entry;
-	// This isn't as it seems because we've previously set some points' angles to exactly vision_angle.start
-	if start_index < los_points.len() && los_points[start_index].angle == vision_angle.start {
+	/* The angles being exactly equal isn't as unlikely as it seems because we have
+	introduced endpoints with perfectly matching angle during endpoint generation */
+	if visible_points_from_start.len() > 0
+		&& visible_points_from_start.first().unwrap().angle == vision_angle.start
+	{
 		entry = FovPoint {
 			point: origin,
 			angle: vision_angle.start,
@@ -248,21 +262,56 @@ pub fn add_vision_wedge(
 		};
 	}
 
-	let exit = FovPoint {
-		point: origin,
-		angle: vision_angle.end,
-		gap: false,
-	};
+	let exit;
+	if start_end_swapped
+		&& visible_points_to_end.len() > 0
+		&& visible_points_to_end.last().unwrap().angle == vision_angle.end
+	{
+		let (point, remaining) = visible_points_to_end.split_last().unwrap();
+		visible_points_to_end = remaining;
+		let mut point = *point;
+		point.gap = false;
+		exit = vec![
+			point,
+			FovPoint {
+				point: origin,
+				angle: vision_angle.end,
+				gap: false,
+			},
+		];
+	} else if !start_end_swapped
+		&& visible_points_from_start.len() > 0
+		&& visible_points_from_start.last().unwrap().angle == vision_angle.end
+	{
+		let (point, remaining) = visible_points_from_start.split_last().unwrap();
+		visible_points_from_start = remaining;
+		let mut point = *point;
+		point.gap = false;
+		exit = vec![
+			point,
+			FovPoint {
+				point: origin,
+				angle: vision_angle.end,
+				gap: false,
+			},
+		];
+	} else {
+		exit = vec![FovPoint {
+			point: origin,
+			angle: vision_angle.end,
+			gap: false,
+		}];
+	}
 
 	if start_end_swapped {
 		[
 			visible_points_to_end,
-			&[exit],
+			&exit,
 			&[entry],
 			visible_points_from_start,
 		]
 		.concat()
 	} else {
-		[&[entry], visible_points_from_start, &[exit]].concat()
+		[&[entry], visible_points_from_start, &exit].concat()
 	}
 }
