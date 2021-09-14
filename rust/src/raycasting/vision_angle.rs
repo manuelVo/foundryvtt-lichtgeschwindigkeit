@@ -194,7 +194,7 @@ pub fn restrict_vision_angle(
 pub fn add_vision_wedge(
 	mut los_points: Vec<FovPoint>,
 	origin: Point,
-	vision_angle: VisionAngle,
+	vision_angle: &VisionAngle,
 	start_gap_fov: &mut bool,
 ) -> Vec<FovPoint> {
 	let mut visible_points_from_start: &[FovPoint];

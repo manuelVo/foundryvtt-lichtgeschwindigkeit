@@ -29,7 +29,7 @@ pub fn compute_polygon(
 	let (mut los_points, start_gap_los, mut start_gap_fov) =
 		calculate_los(origin, radius, &endpoints, &mut start_walls);
 
-	if let Some(vision_angle) = vision_angle {
+	if let Some(vision_angle) = &vision_angle {
 		los_points = add_vision_wedge(los_points, origin, vision_angle, &mut start_gap_fov);
 	}
 
@@ -56,6 +56,7 @@ pub fn compute_polygon(
 		&mut los_points,
 		start_gap_los,
 		origin,
+		&vision_angle,
 		distance,
 		radial_density,
 	);
@@ -63,6 +64,7 @@ pub fn compute_polygon(
 		&mut fov_points,
 		start_gap_fov,
 		origin,
+		&vision_angle,
 		radius,
 		radial_density,
 	);

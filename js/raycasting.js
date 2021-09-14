@@ -31,7 +31,12 @@ let emptyCache = undefined;
 
 function wipeCache() {
 	if (cache)
+		try{
 		Lichtgeschwindigkeit.wipeCache(cache);
+	}
+	catch (e) {
+
+	}
 	cache = undefined;
 }
 

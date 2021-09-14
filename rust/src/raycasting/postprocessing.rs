@@ -3,7 +3,8 @@ use crate::raycasting::types::FovPoint;
 use std::f64::consts::PI;
 use std::mem::swap;
 
-use super::util::is_intersection_on_segment;
+use super::VisionAngle;
+use super::util::{IsSomeAnd, is_intersection_on_segment};
 
 pub fn calculate_fov(
 	origin: Point,
@@ -250,6 +251,7 @@ pub fn fill_gaps(
 	points: &mut Vec<FovPoint>,
 	start_gap: bool,
 	origin: Point,
+	vision_angle: &Option<VisionAngle>,
 	radius: f64,
 	radial_density: f64,
 ) -> Vec<Point> {
@@ -265,7 +267,7 @@ pub fn fill_gaps(
 			a += radial_density;
 		}
 	} else {
-		if points.last().unwrap().point != origin {
+		if points.last().unwrap().point != origin && vision_angle.is_some_and(|vision_angle| points.last().unwrap().angle != vision_angle.end) { // TODO continue the expression. old expression: points.last().unwrap().angle != vision_angle.end {
 			points.last_mut().unwrap().gap = start_gap;
 		}
 		for i in 0..points.len() {

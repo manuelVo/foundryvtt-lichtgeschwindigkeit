@@ -86,3 +86,16 @@ pub fn is_intersection_on_segment(intersection: Point, line: Line, p1: Point, p2
 	}
 	between(intersection.x, p1.x, p2.x)
 }
+
+pub trait IsSomeAnd<T> {
+	fn is_some_and<F: FnOnce(&T) -> bool>(&self, f: F) -> bool;
+}
+
+impl <T> IsSomeAnd<T> for Option<T> {
+	fn is_some_and<F: FnOnce(&T) -> bool>(&self, f: F) -> bool {
+		if let Some(inner) = self {
+			return f(inner);
+		}
+		return false;
+	}
+}
