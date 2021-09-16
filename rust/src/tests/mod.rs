@@ -44,6 +44,11 @@ macro_rules! raytracing_test (
 );
 
 raytracing_test!(
+	limited_vision_angle_over_180_hidden_overflowing_wall,
+	"limited_vision_angle_over_180_hidden_overflowing_wall"
+);
+
+raytracing_test!(
 	limited_vision_angle_overflow_end_hidden,
 	"limited_vision_angle_overflow_end_hidden"
 );
