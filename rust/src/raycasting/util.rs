@@ -81,7 +81,7 @@ pub fn is_intersection_on_segment(intersection: Point, line: Line, p1: Point, p2
 	if intersection.is_same_as(&p1) || intersection.is_same_as(&p2) {
 		return false;
 	}
-	if line.is_vertical() || line.m > 1.0 {
+	if line.is_vertical() || line.m.abs() > 1.0 {
 		return between(intersection.y, p1.y, p2.y);
 	}
 	between(intersection.x, p1.x, p2.x)
