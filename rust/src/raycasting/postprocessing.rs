@@ -202,6 +202,7 @@ pub fn calculate_fov(
 							}
 							let mut overflow = false;
 							// If "exit" is above the origin this means that the circle is overflowing and "exit" is actually the entry
+							// TODO I think this condition will always be true and this can be optimized away
 							if exit.point.y < origin.y {
 								swap(&mut entry, &mut exit);
 								overflow = true;
