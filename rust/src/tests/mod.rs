@@ -97,3 +97,7 @@ raytracing_test!(
 	limited_vision_angle_overflow_both_visible_issue_25,
 	"25-limited_vision_angle_overflow_both_visible"
 );
+raytracing_test!(
+	almost_vertical_line_with_negative_incline_issue_27,
+	"27-almost_vertical_line_with_negative_incline"
+);
