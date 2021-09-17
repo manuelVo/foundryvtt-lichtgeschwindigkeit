@@ -1,3 +1,12 @@
+## 1.4.5
+### New features
+- Small speed improvement for sight calculation when using a restricted vision angle
+
+### Bugfixes
+- Fixed a bug that could cause the vision calculation to crash in specific wall constellations
+- Fixed multiple bugs that could cause incorrectly calculated sight area when a restricted vision angle was being used (especially if that angle is bigger than 180°)
+
+
 ## 1.4.4
 ### Bugfixes
 - The vision calculation algorithm no longer crashes when a token's vision radius is set to 0.
