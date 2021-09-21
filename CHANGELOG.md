@@ -1,3 +1,8 @@
+## 1.4.6
+### Bugfixes
+- Fixed a bug that could cause walls to become see-through if their walls aren't snapped to the grid (or the subgrid)
+
+
 ## 1.4.5
 ### New features
 - Small speed improvement for sight calculation when using a restricted vision angle
