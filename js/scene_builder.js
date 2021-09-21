@@ -18,6 +18,7 @@ export async function build_scene(data) {
 		initial: { x: data.origin.x, y: data.origin.y, scale: 0.5 },
 		tokenVision: true,
 		folder: folder.id,
+		fogExploration: false,
 	}];
 	const wallData = data.walls.map(wall => {
 		return {
