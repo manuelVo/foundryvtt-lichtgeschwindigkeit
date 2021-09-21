@@ -101,3 +101,7 @@ raytracing_test!(
 	almost_vertical_line_with_negative_incline_issue_27,
 	"27-almost_vertical_line_with_negative_incline"
 );
+raytracing_test!(
+	minimally_intersecting_walls_issue_29,
+	"29-minimally_intersecting_walls"
+);
