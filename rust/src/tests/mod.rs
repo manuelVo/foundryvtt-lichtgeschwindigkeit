@@ -105,3 +105,5 @@ raytracing_test!(
 	minimally_intersecting_walls_issue_29,
 	"29-minimally_intersecting_walls"
 );
+
+raytracing_test!(tiny_vision_angle_issue_30, "30-tiny_vision_angle");
