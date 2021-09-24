@@ -1,3 +1,8 @@
+## 1.4.7
+### Bugfixes
+- Fixed a bug where a small vision angle could allow the vision to penetrate through walls
+
+
 ## 1.4.6
 ### Bugfixes
 - Fixed a bug that could cause walls to become see-through if their walls aren't snapped to the grid (or the subgrid)
