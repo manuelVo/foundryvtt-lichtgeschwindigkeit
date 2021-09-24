@@ -3,7 +3,7 @@ use crate::raycasting::types::{Endpoint, FovPoint, VisionAngle, Wall, WallWithAn
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use super::util::{between, between_exclusive};
+use super::util::between_exclusive;
 
 pub fn restrict_vision_angle(
 	wall: &Wall,
@@ -13,11 +13,11 @@ pub fn restrict_vision_angle(
 ) -> Option<[Option<WallWithAngles>; 2]> {
 	if let Some(vision_angle) = vision_angle {
 		if vision_angle.start < vision_angle.end {
-			if !between(start.borrow().angle, vision_angle.start, vision_angle.end)
-				&& !between(end.borrow().angle, vision_angle.start, vision_angle.end)
+			if start.borrow().angle >= vision_angle.end || end.borrow().angle <= vision_angle.start
 			{
 				return Some([None, None]);
 			}
+
 			let wall_inverted;
 			if start.borrow().angle < end.borrow().angle {
 				wall_inverted = false;
