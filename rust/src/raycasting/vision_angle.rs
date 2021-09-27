@@ -13,10 +13,11 @@ pub fn restrict_vision_angle(
 ) -> Option<[Option<WallWithAngles>; 2]> {
 	if let Some(vision_angle) = vision_angle {
 		if vision_angle.start < vision_angle.end {
-
 			let wall_inverted;
 			if start.borrow().angle < end.borrow().angle {
-				if start.borrow().angle >= vision_angle.end || end.borrow().angle <= vision_angle.start {
+				if start.borrow().angle >= vision_angle.end
+					|| end.borrow().angle <= vision_angle.start
+				{
 					return Some([None, None]);
 				}
 				wall_inverted = false;

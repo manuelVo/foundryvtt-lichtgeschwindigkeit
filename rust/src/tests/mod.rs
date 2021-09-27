@@ -107,3 +107,8 @@ raytracing_test!(
 );
 
 raytracing_test!(tiny_vision_angle_issue_30, "30-tiny_vision_angle");
+
+raytracing_test!(
+	limited_angle_wall_to_the_right_with_end_visible_issue_31,
+	"31-limited_angle_wall_to_the_right_with_end_visible"
+);
