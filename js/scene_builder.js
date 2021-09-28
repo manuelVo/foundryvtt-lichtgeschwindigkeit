@@ -36,7 +36,6 @@ export async function build_scene(data) {
 			},
 		};
 	});
-	console.warn(data);
 	window.lsdata = data;
 	const tokenData = [{
 		actorId: "",
@@ -46,6 +45,7 @@ export async function build_scene(data) {
 		brightLight: 0,
 		dimSight: 0,
 		dimLight: 0,
+		vision: true,
 		height: 1,
 		width: 1,
 		scale: 1,
