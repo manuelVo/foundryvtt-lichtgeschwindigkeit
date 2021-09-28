@@ -41,7 +41,6 @@ function hookUpdateOcclusion() {
 		const oldOcclusion = this.occluded;
 		original.call(this, tokens);
 		if (cache && oldOcclusion != this.occluded && this.data.occlusion.mode === CONST.TILE_OCCLUSION_MODES.ROOF) {
-			console.warn("updating occlusion for " + this.id + " to " + this.occluded);
 			Lichtgeschwindigkeit.updateOcclusion(cache, this.id, this.occluded);
 		}
 	}
