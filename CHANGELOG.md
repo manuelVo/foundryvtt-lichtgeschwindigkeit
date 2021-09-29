@@ -1,3 +1,7 @@
+## 1.4.9
+### Bugfixes
+- Fixed another bug where walls to the right of a token could become see-through if one of it's end points was hidden due to the token's vision angle
+
 ## 1.4.8
 ### Bugfixes
 - Fixed a bug where walls to the right of a token could become see-through if one of it's end points was hidden due to the token's vision angle
