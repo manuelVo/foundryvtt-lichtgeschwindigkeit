@@ -112,3 +112,8 @@ raytracing_test!(
 	limited_angle_wall_to_the_right_with_end_visible_issue_31,
 	"31-limited_angle_wall_to_the_right_with_end_visible"
 );
+
+raytracing_test!(
+	limited_angle_wall_to_the_right_with_start_visible_issue_32,
+	"32-limited_angle_wall_to_the_right_with_start_visible"
+);
