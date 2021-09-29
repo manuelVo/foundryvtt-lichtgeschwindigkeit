@@ -22,7 +22,7 @@ pub fn restrict_vision_angle(
 				}
 				wall_inverted = false;
 			} else {
-				if end.borrow().angle <= vision_angle.start {
+				if end.borrow().angle <= vision_angle.start && start.borrow().angle >= vision_angle.end {
 					return Some([None, None]);
 				}
 				wall_inverted = true;
