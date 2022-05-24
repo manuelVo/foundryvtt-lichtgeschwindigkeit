@@ -2,6 +2,8 @@
 
 # Lichtgeschwindigkeit
 
+**This module supports only FoundryVTT v0.7 and v0.8. The lighting system in FoundryVTT has drastically improved since FoundryVTT v9. For this reason a port of this module to newer FoundryVTT versions is unlikely.**
+
 Lichtgeschwindigkeit improves the speed and accuracy of Foundrys lighting calculation. On the maps used for benchmarking, Lichtgeschwindigkeit is around 2x-3x faster than Foundrys native lighting calculation.
 
 In addition the lighting calculation by Lichtgeschwindigkeit is incredibly precise, providing better lighting quality than Foundry does natively, especially on scenes with many walls. For easy comparison, the videos below compare a forest scene with some trees, with vision calculation performed by Lichtgeschwindigkeit and by different supported foundry versions. The lighting rendered by native foundry is flickery during animations, because the shadows vary in width between the frames. With Lichtgeschwindigkeit the shadows have exactly the width they should have and are animated very smoothly as a result.
